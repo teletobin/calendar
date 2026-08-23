@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>홍대점 공유캘린더</title>
+<title>실장/코디/간호/피부 공유캘린더</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+  @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap");
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: Arial, "Malgun Gothic", sans-serif;
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
     background: #f6f7f9;
     color: #222;
   }
@@ -27,7 +28,7 @@
     justify-content:space-between;
     gap:20px;
   }
-  h1 { margin:0; font-size:22px; }
+  h1 { margin:0; font-size:22px; font-weight:800; letter-spacing:-0.7px; }
   .month-nav { display:flex; align-items:center; gap:8px; }
   button {
     border:0;
@@ -66,7 +67,7 @@
     gap:8px;
   }
   .day {
-    min-height:125px;
+    min-height:175px;
     background:#fff;
     border:1px solid #bfc3c8;
     position:relative;
@@ -104,7 +105,7 @@
   .part-row {
     flex:1 1 0;
     min-height:0;
-    height:25px;
+    height:36px;
     border-bottom:1px solid #ddd;
     display:flex;
     align-items:stretch;
@@ -124,15 +125,16 @@
   .memo {
     width:100%;
     min-height:0;
-    height:25px;
+    height:36px;
     border:0;
     outline:0;
     background:transparent;
     padding:2px 4px;
     font-size:11px;
-    line-height:1.1;
+    line-height:1.2;
     font-family:inherit;
     white-space:pre-wrap;
+    overflow-y:hidden;
     overflow-wrap:anywhere;
     cursor:text;
     display:flex;
@@ -348,7 +350,10 @@
   </div>
 </header>
 
-
+<div class="setup" id="setupNotice">
+  <strong>처음 한 번만 설정:</strong> 아래 코드의 SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY를 본인 Supabase 프로젝트 값으로 바꾸고,
+  함께 제공한 <b>supabase_setup.sql</b>을 Supabase SQL Editor에서 실행하세요.
+</div>
 
 <div class="calendar-wrap">
   <div class="calendar" id="calendar"></div>
@@ -477,7 +482,7 @@ async function loadMonth() {
     };
   }
 
-  setSaveState("저장됨");
+  setSaveState("자동 저장됨");
   render();
 }
 
@@ -562,6 +567,35 @@ function createDayBox(d, isOutsideMonth = false) {
     const sundayDefault = sunday ? getSundayDefaults(dateStr)[idx] : "";
     memo.innerHTML = (sunday && !entry.memo) ? sundayDefault : entry.memo;
     memo.dataset.placeholder = sunday ? "" : ` `;
+
+    memo.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+
+      e.preventDefault();
+
+      // 이미 2줄이면 더 이상 줄을 만들지 않음.
+      const currentLines = memo.innerText.replace(/\\r/g, "").split("\\n");
+      if (currentLines.length >= 2) return;
+
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+
+      const range = sel.getRangeAt(0);
+      if (!memo.contains(range.startContainer)) return;
+
+      // 같은 포지션의 메모 안에서만 줄바꿈.
+      const br = document.createElement("br");
+      range.deleteContents();
+      range.insertNode(br);
+      range.setStartAfter(br);
+      range.collapse(true);
+
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      getEntry(dateStr, part, sunday).memo = memo.innerHTML;
+      queueSave(dateStr, part);
+    });
 
     memo.addEventListener("input", () => {
       getEntry(dateStr, part, sunday).memo = memo.innerHTML;
@@ -656,7 +690,7 @@ async function saveEntry(dateStr, part) {
 
   if (!db) {
     localStorage.setItem("clinicCalendarDemo", JSON.stringify(entries));
-    setSaveState("데모 저장됨");
+    setSaveState("자동 저장됨");
     return;
   }
 
@@ -675,12 +709,12 @@ async function saveEntry(dateStr, part) {
     console.error(error);
     setSaveState("저장 오류");
   } else {
-    setSaveState("저장됨");
+    setSaveState("자동 저장됨");
   }
 }
 
 function queueSave(dateStr, part) {
-  setSaveState("저장 중…");
+  setSaveState("자동 저장 중…");
   clearTimeout(savingTimer);
   savingTimer = setTimeout(() => saveEntry(dateStr, part), 350);
 }
