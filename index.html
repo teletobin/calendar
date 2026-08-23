@@ -41,6 +41,7 @@
   .month-label { min-width:125px; text-align:center; font-size:18px; font-weight:800; }
   .week-head {
     margin-top:6px;
+    min-width:1580px;
     display:grid;
     grid-template-columns:82px repeat(6,minmax(235px,1fr));
     gap:8px;
@@ -56,7 +57,7 @@
   }
   .calendar-wrap {
     overflow-x:auto;
-    padding:5px;
+    padding:5px 18px;
   }
   .calendar {
     min-width:1580px;
@@ -75,6 +76,7 @@
   }
   .day.blank { background:#f0f1f2; }
   .day.sunday { background:#fff8f8; }
+  .day.outside-month { opacity:.92; }
   .day-header {
     height:24px;
     flex:0 0 24px;
@@ -85,7 +87,11 @@
     border-bottom:1px solid #c8c8c8;
     background:rgba(255,255,255,.72);
   }
-  .date { font-weight:800; }
+  .date {
+    font-weight:800;
+    margin-left:auto;
+    text-align:right;
+  }
   .status-badge {
     font-size:9px;
     padding:1px 5px;
@@ -214,88 +220,104 @@
   @media print {
     @page {
       size: A4 landscape;
-      margin: 5mm;
+      margin: 3mm;
     }
     html, body {
       width:100%;
       height:100%;
+      margin:0;
+      padding:0;
       background:#fff;
       overflow:visible;
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
     }
     .top {
       position:static;
-      padding:2mm 2mm 1mm;
+      width:100%;
+      padding:1mm 0 .5mm;
       box-shadow:none;
     }
     h1 { font-size:14pt; }
     .month-nav { display:none; }
     .week-head {
-      margin-top:1.5mm;
+      margin:0;
+      min-width:0;
+      width:100%;
       display:grid;
-      grid-template-columns:82px repeat(6,minmax(0,1fr));
-      gap:0.7mm;
+      grid-template-columns:11mm repeat(6,minmax(0,1fr));
+      gap:0.4mm;
       overflow:visible;
     }
     .week-head div {
-      font-size:7pt;
-      padding:1mm;
+      font-size:6.5pt;
+      padding:.7mm;
     }
     .calendar-wrap {
-      padding:1.5mm 0 0;
+      width:100%;
+      padding:.7mm 0 0;
       overflow:visible;
     }
     .calendar {
       width:100%;
       min-width:0;
+      height:174mm;
       display:grid;
-      grid-template-columns:82px repeat(6,minmax(0,1fr));
-      gap:0.7mm;
+      grid-template-columns:11mm repeat(6,minmax(0,1fr));
+      grid-auto-rows:1fr;
+      gap:0.4mm;
     }
     .day {
       min-height:0;
-      height:auto;
-      border:0.3mm solid #777;
+      height:100%;
+      width:100%;
+      border:0.25mm solid #777;
       break-inside:avoid;
     }
     .day-header {
-      height:5.5mm;
-      flex-basis:5.5mm;
-      padding:0.7mm 1.2mm;
+      height:5mm;
+      flex:0 0 5mm;
+      padding:.4mm 1mm;
     }
-    .date { font-size:7pt; }
-    .status-badge { font-size:5.5pt; padding:.2mm 1mm; }
+    .date { font-size:6.5pt; margin-left:auto; text-align:right; }
+    .status-badge { font-size:5pt; padding:.15mm .8mm; }
     .part-row {
       min-height:0;
-      height:7.2mm;
+      height:6.8mm;
       display:flex;
       align-items:stretch;
     }
     .part-name {
-      width:8mm;
-      flex-basis:8mm;
-      padding:.5mm .5mm;
-      font-size:6pt;
+      width:7mm;
+      flex-basis:7mm;
+      padding:.35mm .25mm;
+      font-size:5.5pt;
       align-items:center;
       justify-content:center;
       text-align:center;
     }
     .memo {
       min-height:0;
-      height:7.2mm;
-      padding:.4mm .8mm;
-      font-size:6.2pt;
-      line-height:1.02;
+      height:6.8mm;
+      padding:.3mm .6mm;
+      font-size:5.8pt;
+      line-height:1;
       display:flex;
       align-items:center;
-      justify-content:center;
-      text-align:center;
+      justify-content:flex-start;
+      text-align:left;
     }
     .setup, .toolbar, .selection-toolbar, .save-state {
       display:none !important;
     }
     .signature {
-      font-size:6pt;
-      padding:1mm 0 0;
+      font-size:5.5pt;
+      padding:.8mm 0 0;
+    }
+    .calendar-wrap,
+    .calendar,
+    .week-head {
+      max-width:100%;
     }
   }
 
@@ -327,6 +349,7 @@
 </header>
 
 
+
 <div class="calendar-wrap">
   <div class="calendar" id="calendar"></div>
 </div>
@@ -347,9 +370,9 @@
 </div>
 
 <div class="selection-toolbar" id="selectionToolbar">
-  <button type="button" data-text-color="#222222" title="BLACK">●</button>
-  <button type="button" data-text-color="#d62828" title="RED" class="red">●</button>
-  <button type="button" data-text-color="#2468d8" title="BLUE" class="blue">●</button>
+  <button type="button" data-text-color="#222222" title="진한 차콜">●</button>
+  <button type="button" data-text-color="#d62828" title="빨간색" class="red">●</button>
+  <button type="button" data-text-color="#2468d8" title="파란색" class="blue">●</button>
 </div>
 
 <div class="save-state" id="saveState">저장 준비 중…</div>
@@ -374,6 +397,24 @@ const db = supabaseReady
 
 const PARTS = ["실장", "코디", "간호", "피부"];
 const DEFAULT_SUNDAY = ["마감", "수건", "탕비실", "인스타"];
+
+// 2026-08-02(일)을 기준으로 일요일 담당을 매주 자동 순환
+// 탕비실: 간호 → 코디 → 피부
+// 수건:   피부 → 코디
+// 인스타: 피부 → 코디 → 간호
+const SUNDAY_ROTATION_START = new Date(2026, 7, 2);
+
+function getSundayDefaults(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  const diffDays = Math.floor((d - SUNDAY_ROTATION_START) / 86400000);
+  const weekIndex = Math.floor(diffDays / 7);
+
+  const pantry = ["간호", "코디", "피부"][((weekIndex % 3) + 3) % 3];
+  const towel = ["피부", "코디"][((weekIndex % 2) + 2) % 2];
+  const instagram = ["피부", "코디", "간호"][((weekIndex % 3) + 3) % 3];
+
+  return ["", towel, pantry, instagram];
+}
 
 let viewDate = new Date();
 viewDate.setDate(1);
@@ -443,8 +484,9 @@ async function loadMonth() {
 function getEntry(dateStr, part, isSunday) {
   const key = keyFor(dateStr, part);
   if (!entries[key]) {
+    const sundayDefaults = isSunday ? getSundayDefaults(dateStr) : ["", "", "", ""];
     entries[key] = {
-      memo: isSunday ? DEFAULT_SUNDAY[PARTS.indexOf(part)] : "",
+      memo: isSunday ? sundayDefaults[PARTS.indexOf(part)] : "",
       bg: "",
       text: "",
       status: "normal"
@@ -466,6 +508,86 @@ function dayStatus(dateStr) {
   return first.status || "normal";
 }
 
+function createDayBox(d, isOutsideMonth = false) {
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const dateStr = dateToISO(d);
+  const sunday = d.getDay() === 0;
+
+  const dayBox = document.createElement("div");
+  dayBox.className = "day" + (sunday ? " sunday" : "");
+  if (isOutsideMonth) dayBox.classList.add("outside-month");
+  dayBox.dataset.date = dateStr;
+
+  const style = getDayStyle(dateStr);
+  if (style.bg) dayBox.style.background = style.bg;
+
+  const header = document.createElement("div");
+  header.className = "day-header";
+
+  const dateEl = document.createElement("span");
+  dateEl.className = "date";
+  dateEl.textContent = `${month}/${day}`;
+
+  const badge = document.createElement("span");
+  badge.className = "status-badge";
+  const status = dayStatus(dateStr);
+  if (status === "off") { badge.textContent = "휴무"; badge.classList.add("off"); }
+  else if (status === "short") { badge.textContent = "단축근무"; badge.classList.add("short"); }
+  else if (status === "other") { badge.textContent = "기타"; }
+  else { badge.textContent = ""; badge.style.display = "none"; }
+
+  header.append(dateEl, badge);
+  header.addEventListener("dblclick", () => openToolbar(dateStr));
+  dayBox.appendChild(header);
+
+  const rows = document.createElement("div");
+  rows.className = "rows";
+
+  PARTS.forEach((part, idx) => {
+    const row = document.createElement("div");
+    row.className = "part-row";
+
+    const partName = document.createElement("div");
+    partName.className = "part-name";
+    partName.textContent = sunday ? DEFAULT_SUNDAY[idx] : part;
+
+    const memo = document.createElement("div");
+    memo.className = "memo";
+    memo.contentEditable = "true";
+    memo.spellcheck = false;
+
+    const entry = getEntry(dateStr, part, sunday);
+    const sundayDefault = sunday ? getSundayDefaults(dateStr)[idx] : "";
+    memo.innerHTML = (sunday && !entry.memo) ? sundayDefault : entry.memo;
+    memo.dataset.placeholder = sunday ? "" : ` `;
+
+    memo.addEventListener("input", () => {
+      getEntry(dateStr, part, sunday).memo = memo.innerHTML;
+      queueSave(dateStr, part);
+    });
+    memo.addEventListener("mouseup", () => showSelectionToolbar(memo));
+    memo.addEventListener("keyup", () => showSelectionToolbar(memo));
+
+    row.append(partName, memo);
+    rows.appendChild(row);
+  });
+
+  dayBox.appendChild(rows);
+
+  dayBox.addEventListener("click", (e) => {
+    if (e.target.closest("textarea")) return;
+    selectDay(dayBox);
+  });
+  dayBox.addEventListener("dblclick", (e) => {
+    if (e.target.closest("textarea")) return;
+    openToolbar(dateStr);
+  });
+
+  return dayBox;
+}
+
 function render() {
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth() + 1;
@@ -477,82 +599,22 @@ function render() {
   const firstDay = new Date(year, month-1, 1).getDay();
   const days = new Date(year, month, 0).getDate();
 
-  for (let i=0; i<firstDay; i++) {
-    const blank = document.createElement("div");
-    blank.className = "day blank";
-    calendar.appendChild(blank);
+  // 첫 주의 일요일은 월이 시작되기 전의 실제 일요일을 표시한다.
+  // 따라서 1일이 화요일이어도 첫 번째 일요일 칸이 비어 있지 않는다.
+  if (firstDay > 0) {
+    const previousSunday = new Date(year, month - 1, 1 - firstDay);
+    calendar.appendChild(createDayBox(previousSunday, true));
+
+    for (let i = 1; i < firstDay; i++) {
+      const blank = document.createElement("div");
+      blank.className = "day blank";
+      calendar.appendChild(blank);
+    }
   }
 
   for (let day=1; day<=days; day++) {
     const d = new Date(year, month-1, day);
-    const dateStr = dateToISO(d);
-    const sunday = d.getDay() === 0;
-
-    const dayBox = document.createElement("div");
-    dayBox.className = "day" + (sunday ? " sunday" : "");
-    dayBox.dataset.date = dateStr;
-
-    const style = getDayStyle(dateStr);
-    if (style.bg) dayBox.style.background = style.bg;
-
-    const header = document.createElement("div");
-    header.className = "day-header";
-
-    const dateEl = document.createElement("span");
-    dateEl.className = "date";
-    dateEl.textContent = `${month}/${day}`;
-
-    const badge = document.createElement("span");
-    badge.className = "status-badge";
-    const status = dayStatus(dateStr);
-    if (status === "off") { badge.textContent = "휴무"; badge.classList.add("off"); }
-    else if (status === "short") { badge.textContent = "단축근무"; badge.classList.add("short"); }
-    else if (status === "other") { badge.textContent = "기타"; }
-    else { badge.textContent = ""; badge.style.display = "none"; }
-
-    header.append(dateEl, badge);
-    header.addEventListener("dblclick", () => openToolbar(dateStr));
-    dayBox.appendChild(header);
-
-    const rows = document.createElement("div");
-    rows.className = "rows";
-
-    PARTS.forEach((part, idx) => {
-      const row = document.createElement("div");
-      row.className = "part-row";
-
-      const partName = document.createElement("div");
-      partName.className = "part-name";
-      partName.textContent = sunday ? DEFAULT_SUNDAY[idx] : part;
-
-      const memo = document.createElement("div");
-      memo.className = "memo";
-      memo.contentEditable = "true";
-      memo.spellcheck = false;
-      memo.innerHTML = getEntry(dateStr, part, sunday).memo;
-      memo.dataset.placeholder = sunday ? "" : ` `;
-      memo.addEventListener("input", () => {
-        getEntry(dateStr, part, sunday).memo = memo.innerHTML;
-        queueSave(dateStr, part);
-      });
-      memo.addEventListener("mouseup", () => showSelectionToolbar(memo));
-      memo.addEventListener("keyup", () => showSelectionToolbar(memo));
-
-      row.append(partName, memo);
-      rows.appendChild(row);
-    });
-
-    dayBox.appendChild(rows);
-    dayBox.addEventListener("click", (e) => {
-      if (e.target.closest("textarea")) return;
-      selectDay(dayBox);
-    });
-    dayBox.addEventListener("dblclick", (e) => {
-      if (e.target.closest("textarea")) return;
-      openToolbar(dateStr);
-    });
-
-    calendar.appendChild(dayBox);
+    calendar.appendChild(createDayBox(d, false));
   }
 }
 
