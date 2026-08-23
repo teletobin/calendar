@@ -667,33 +667,22 @@ function createDayBox(d, isOutsideMonth = false) {
     }
 
     memo.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
+  if (e.key !== "Enter") return;
 
-      e.preventDefault();
+  e.preventDefault();
 
-      if (getMemoLineCount(memo) >= 2) {
-        showLineLimitNotice();
-        return;
-      }
+  if (getMemoLineCount(memo) >= 2) {
+    showLineLimitNotice();
+    return;
+  }
 
-      const sel = window.getSelection();
-      if (!sel || !sel.rangeCount) return;
-      const range = sel.getRangeAt(0);
-      if (!memo.contains(range.startContainer)) return;
+  document.execCommand("insertLineBreak");
 
-      const br = document.createElement("br");
-      range.deleteContents();
-      range.insertNode(br);
-      range.setStartAfter(br);
-      range.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(range);
-
-      updateMemoLineClass(memo);
-      memo.dataset.lastValidHtml = memo.innerHTML;
-      getEntry(dateStr, part, sunday).memo = memo.innerHTML;
-      queueSave(dateStr, part);
-    });
+  updateMemoLineClass(memo);
+  memo.dataset.lastValidHtml = memo.innerHTML;
+  getEntry(dateStr, part, sunday).memo = memo.innerHTML;
+  queueSave(dateStr, part);
+});
 
     memo.addEventListener("input", () => {
       const lineCount = getMemoLineCount(memo);
