@@ -224,6 +224,8 @@
   .toolbar h3 { margin:0 0 10px; }
   .toolbar-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
   .toolbar button { border:1px solid #ddd; padding:7px 4px; font-size:12px; }
+  .toolbar-grid button[data-status="off"] { background:#d9d9d9; }
+  .toolbar-grid button[data-status="short"] { background:#fff3c4; }
   .toolbar-status-tip {
     margin-top:9px;
     font-size:11px;
@@ -402,7 +404,7 @@
 <div class="line-limit-notice" id="lineLimitNotice">텍스트는 최대 2줄까지만 입력할 수 있어요</div>
 
 <div class="setup" id="setupNotice">
-  1. 텍스트를 입력한 후 색상을 바꿀 부분을 드래그하면 글자색을 바꿀 수 있어요. 2. 날짜칸을 더블클릭하면 휴무/단축근무를 설정할 수 있어요
+  1. 텍스트 입력 후 색상을 바꿀 부분을 드래그하면 글자색을 바꿀 수 있어요. 2. 날짜칸을 세 번 클릭하면 휴무/단축근무를 설정할 수 있어요
 </div>
 
 <div class="calendar-wrap">
@@ -419,7 +421,7 @@
     <button data-status="short">단축근무</button>
   </div>
   <div class="toolbar-status-tip">휴무 = 회색 · 단축근무 = 연노랑</div>
-  <div class="toolbar-text-tip">텍스트를 입력한 후 글자색을 바꾸고 싶은 부분을 드래그하면 텍스트 색상을 바꿀 수 있어요.</div>
+  
   <button id="closeToolbar" style="width:100%;margin-top:10px;">닫기</button>
 </div>
 
@@ -592,8 +594,7 @@ function createDayBox(d, isOutsideMonth = false) {
   else if (status === "other") { badge.textContent = "기타"; }
   else { badge.textContent = ""; badge.style.display = "none"; }
 
-  header.append(dateEl, badge);
-  header.addEventListener("dblclick", () => openToolbar(dateStr));
+  header.append(badge, dateEl);
   dayBox.appendChild(header);
 
   const rows = document.createElement("div");
@@ -631,15 +632,22 @@ function createDayBox(d, isOutsideMonth = false) {
 
     function getMemoLineCount(editor) {
       // Enter로 만들어진 <br>와 contenteditable의 <div>/<p> 모두 줄로 계산
+      // (innerText는 맨 끝의 <br>를 잘라내는 브라우저가 있어 둘째줄에서
+      //  다시 Enter를 쳤을 때 줄 수를 잘못 세는 문제가 있었음 -> <br> 개수 직접 계산)
       const clone = editor.cloneNode(true);
       clone.querySelectorAll("script,style").forEach(el => el.remove());
-      clone.innerHTML = clone.innerHTML
+      const html = clone.innerHTML
         .replace(/<div[^>]*>/gi, "<br>")
         .replace(/<\/div>/gi, "")
         .replace(/<p[^>]*>/gi, "<br>")
         .replace(/<\/p>/gi, "");
-      const text = clone.innerText.replace(/\r/g, "");
-      return Math.max(1, text.split("\n").length);
+      const brCount = (html.match(/<br\s*\/?>/gi) || []).length;
+      return Math.max(1, brCount + 1);
+    }
+
+    function isMemoOverflowing(editor) {
+      // 줄바꿈 없이 텍스트만 쭉 입력해도 두 줄 높이를 넘으면 입력을 막기 위한 검사
+      return editor.scrollHeight - editor.clientHeight > 1;
     }
 
     function updateMemoLineClass(editor) {
@@ -689,19 +697,18 @@ function createDayBox(d, isOutsideMonth = false) {
 
     memo.addEventListener("input", () => {
       const lineCount = getMemoLineCount(memo);
+      updateMemoLineClass(memo);
 
       // 글자색 변경도 input 이벤트를 발생시킬 수 있으므로
-      // 실제 줄바꿈이 3줄 이상인 경우에만 제한한다.
-      if (lineCount > 2) {
+      // 실제 줄바꿈이 3줄 이상이거나, Enter 없이 텍스트만 입력해 두 줄
+      // 높이를 넘치는(overflow) 경우에만 제한한다.
+      if (lineCount > 2 || isMemoOverflowing(memo)) {
         restoreLastValidMemo();
         updateMemoLineClass(memo);
         showLineLimitNotice();
         return;
       }
 
-      // scrollHeight로 제한하지 않는다.
-      // 색상 span/font가 생겨도 같은 줄의 텍스트가 분리되지 않아야 한다.
-      updateMemoLineClass(memo);
       memo.dataset.lastValidHtml = memo.innerHTML;
       getEntry(dateStr, part, sunday).memo = memo.innerHTML;
       queueSave(dateStr, part);
@@ -735,10 +742,9 @@ function createDayBox(d, isOutsideMonth = false) {
   dayBox.addEventListener("click", (e) => {
     if (e.target.closest("textarea")) return;
     selectDay(dayBox);
-  });
-  dayBox.addEventListener("dblclick", (e) => {
-    if (e.target.closest("textarea")) return;
-    openToolbar(dateStr);
+    if (e.detail === 3) {
+      openToolbar(dateStr);
+    }
   });
 
   return dayBox;
