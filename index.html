@@ -94,13 +94,33 @@
     text-align:right;
   }
   .status-badge {
-    font-size:9px;
-    padding:1px 5px;
-    border-radius:99px;
-    background:#eee;
+    font-size:15px;
+    font-weight:800;
+    padding:0;
+    border-radius:0;
+    background:transparent;
+    line-height:1;
   }
-  .status-badge.off { background:#333; color:#fff; }
-  .status-badge.short { background:#ffe7a3; }
+  .status-badge.off { background:transparent; color:#333; }
+  .status-badge.short { background:transparent; color:#9a7200; }
+  .line-limit-notice {
+    position:fixed;
+    top:72px;
+    left:50%;
+    transform:translateX(-50%) translateY(-8px);
+    z-index:80;
+    display:none;
+    padding:8px 15px;
+    border:1px solid #f0c36d;
+    border-radius:999px;
+    background:#fff8e8;
+    color:#8a5a00;
+    font-size:12px;
+    font-weight:700;
+    box-shadow:0 4px 16px rgba(0,0,0,.12);
+    pointer-events:none;
+  }
+  .line-limit-notice.show { display:block; }
   .rows { flex:1; display:flex; flex-direction:column; }
   .part-row {
     flex:1 1 0;
@@ -121,7 +141,8 @@
     align-items:center;
     justify-content:center;
     text-align:center;
-  }
+    line-height:1.2;
+  } 
   .memo {
     width:100%;
     min-height:0;
@@ -129,25 +150,33 @@
     border:0;
     outline:0;
     background:transparent;
-    padding:2px 4px;
+    padding:0 4px;
     font-size:11px;
-    line-height:1.2;
+    line-height:18px;
     font-family:inherit;
     white-space:pre-wrap;
-    overflow-y:hidden;
+    overflow:hidden;
     overflow-wrap:anywhere;
     cursor:text;
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
+    display:block;
     text-align:left;
   }
+  .memo.one-line { padding-top:9px; }
+  .memo.two-lines { padding-top:0; }
   .memo:focus { background:rgba(255,255,255,.55); }
   .memo:empty:before {
     content:attr(data-placeholder);
     color:#aaa;
   }
-  .memo br { line-height:1.1; }
+  .memo br { line-height:1.2; }
+  .memo > span,
+  .memo > font,
+  .memo > b,
+  .memo > strong,
+  .memo > i,
+  .memo > em {
+    display:inline;
+  }
   .selection-toolbar {
     position:fixed;
     display:none;
@@ -176,8 +205,11 @@
   .empty { visibility:hidden; }
   .toolbar {
     position:fixed;
-    right:18px;
-    bottom:18px;
+    left:50%;
+    top:50%;
+    right:auto;
+    bottom:auto;
+    transform:translate(-50%,-50%);
     width:330px;
     max-width:calc(100vw - 36px);
     background:#fff;
@@ -192,6 +224,22 @@
   .toolbar h3 { margin:0 0 10px; }
   .toolbar-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
   .toolbar button { border:1px solid #ddd; padding:7px 4px; font-size:12px; }
+  .toolbar-status-tip {
+    margin-top:9px;
+    font-size:11px;
+    color:#777;
+    text-align:center;
+  }
+  .toolbar-text-tip {
+    margin-top:10px;
+    padding:9px 10px;
+    border-radius:9px;
+    background:#f7f8fa;
+    color:#666;
+    font-size:10.5px;
+    line-height:1.45;
+    text-align:center;
+  }
   .selected-outline { outline:3px solid #4d7cff; outline-offset:-3px; }
   .save-state {
     position:fixed; left:18px; bottom:18px;
@@ -282,7 +330,7 @@
       padding:.4mm 1mm;
     }
     .date { font-size:6.5pt; margin-left:auto; text-align:right; }
-    .status-badge { font-size:5pt; padding:.15mm .8mm; }
+    .status-badge { font-size:8pt; padding:0; font-weight:800; }
     .part-row {
       min-height:0;
       height:6.8mm;
@@ -297,19 +345,20 @@
       align-items:center;
       justify-content:center;
       text-align:center;
+      line-height:1.05;
     }
     .memo {
       min-height:0;
       height:6.8mm;
-      padding:.3mm .6mm;
+      padding:0 .6mm;
       font-size:5.8pt;
-      line-height:1;
-      display:flex;
-      align-items:center;
-      justify-content:flex-start;
+      line-height:3.4mm;
+      display:block;
       text-align:left;
     }
-    .setup, .toolbar, .selection-toolbar, .save-state {
+    .memo.one-line { padding-top:1.7mm; }
+    .memo.two-lines { padding-top:0; }
+    .setup, .toolbar, .selection-toolbar, .save-state, .line-limit-notice {
       display:none !important;
     }
     .signature {
@@ -350,6 +399,12 @@
   </div>
 </header>
 
+<div class="line-limit-notice" id="lineLimitNotice">텍스트는 최대 2줄까지만 입력할 수 있어요</div>
+
+<div class="setup" id="setupNotice">
+  1. 텍스트를 입력한 후 색상을 바꿀 부분을 드래그하면 글자색을 바꿀 수 있어요. 2. 날짜칸을 더블클릭하면 휴무/단축근무를 설정할 수 있어요
+</div>
+
 <div class="calendar-wrap">
   <div class="calendar" id="calendar"></div>
 </div>
@@ -363,9 +418,8 @@
     <button data-status="off">휴무</button>
     <button data-status="short">단축근무</button>
   </div>
-  <div style="margin-top:9px;font-size:11px;color:#666;">
-    휴무 = 회색 / 단축근무 = 연노랑
-  </div>
+  <div class="toolbar-status-tip">휴무 = 회색 · 단축근무 = 연노랑</div>
+  <div class="toolbar-text-tip">텍스트를 입력한 후 글자색을 바꾸고 싶은 부분을 드래그하면 텍스트 색상을 바꿀 수 있어요.</div>
   <button id="closeToolbar" style="width:100%;margin-top:10px;">닫기</button>
 </div>
 
@@ -563,39 +617,112 @@ function createDayBox(d, isOutsideMonth = false) {
     memo.innerHTML = (sunday && !entry.memo) ? sundayDefault : entry.memo;
     memo.dataset.placeholder = sunday ? "" : ` `;
 
+    updateMemoLineClass(memo);
+    memo.dataset.lastValidHtml = memo.innerHTML;
+
+    function showLineLimitNotice() {
+      const notice = $("lineLimitNotice");
+      notice.classList.add("show");
+      clearTimeout(window.__lineLimitNoticeTimer);
+      window.__lineLimitNoticeTimer = setTimeout(() => {
+        notice.classList.remove("show");
+      }, 2200);
+    }
+
+    function getMemoLineCount(editor) {
+      // Enter로 만들어진 <br>와 contenteditable의 <div>/<p> 모두 줄로 계산
+      const clone = editor.cloneNode(true);
+      clone.querySelectorAll("script,style").forEach(el => el.remove());
+      clone.innerHTML = clone.innerHTML
+        .replace(/<div[^>]*>/gi, "<br>")
+        .replace(/<\/div>/gi, "")
+        .replace(/<p[^>]*>/gi, "<br>")
+        .replace(/<\/p>/gi, "");
+      const text = clone.innerText.replace(/\r/g, "");
+      return Math.max(1, text.split("\n").length);
+    }
+
+    function updateMemoLineClass(editor) {
+      const count = getMemoLineCount(editor);
+      editor.classList.toggle("one-line", count <= 1);
+      editor.classList.toggle("two-lines", count >= 2);
+    }
+
+    function restoreLastValidMemo() {
+      memo.innerHTML = memo.dataset.lastValidHtml || "";
+      const range = document.createRange();
+      range.selectNodeContents(memo);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
     memo.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
 
       e.preventDefault();
 
-      // 이미 2줄이면 더 이상 줄을 만들지 않음.
-      const currentLines = memo.innerText.replace(/\\r/g, "").split("\\n");
-      if (currentLines.length >= 2) return;
+      if (getMemoLineCount(memo) >= 2) {
+        showLineLimitNotice();
+        return;
+      }
 
       const sel = window.getSelection();
       if (!sel || !sel.rangeCount) return;
-
       const range = sel.getRangeAt(0);
       if (!memo.contains(range.startContainer)) return;
 
-      // 같은 포지션의 메모 안에서만 줄바꿈.
       const br = document.createElement("br");
       range.deleteContents();
       range.insertNode(br);
       range.setStartAfter(br);
       range.collapse(true);
-
       sel.removeAllRanges();
       sel.addRange(range);
 
+      updateMemoLineClass(memo);
+      memo.dataset.lastValidHtml = memo.innerHTML;
       getEntry(dateStr, part, sunday).memo = memo.innerHTML;
       queueSave(dateStr, part);
     });
 
     memo.addEventListener("input", () => {
+      const lineCount = getMemoLineCount(memo);
+
+      // 글자색 변경도 input 이벤트를 발생시킬 수 있으므로
+      // 실제 줄바꿈이 3줄 이상인 경우에만 제한한다.
+      if (lineCount > 2) {
+        restoreLastValidMemo();
+        updateMemoLineClass(memo);
+        showLineLimitNotice();
+        return;
+      }
+
+      // scrollHeight로 제한하지 않는다.
+      // 색상 span/font가 생겨도 같은 줄의 텍스트가 분리되지 않아야 한다.
+      updateMemoLineClass(memo);
+      memo.dataset.lastValidHtml = memo.innerHTML;
       getEntry(dateStr, part, sunday).memo = memo.innerHTML;
       queueSave(dateStr, part);
     });
+    memo.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData("text");
+      const incomingLines = text.replace(/\r/g, "").split("\n");
+      const currentLines = getMemoLineCount(memo);
+      const allowed = Math.max(0, 2 - currentLines + 1);
+
+      if (currentLines >= 2 && incomingLines.length > 0) {
+        showLineLimitNotice();
+        return;
+      }
+
+      const textToInsert = incomingLines.slice(0, allowed).join("\n");
+      if (incomingLines.length > allowed) showLineLimitNotice();
+      document.execCommand("insertText", false, textToInsert);
+    });
+
     memo.addEventListener("mouseup", () => showSelectionToolbar(memo));
     memo.addEventListener("keyup", () => showSelectionToolbar(memo));
 
@@ -793,7 +920,8 @@ document.querySelectorAll("#selectionToolbar button").forEach(btn => {
 
     if (editor) {
       const dateStr = editor.closest(".day")?.dataset.date;
-      const part = editor.closest(".part-row")?.querySelector(".part-name")?.textContent;
+      const row = editor.closest(".part-row");
+      const part = row?.dataset.part;
       if (dateStr && part) {
         getEntry(dateStr, part, new Date(dateStr).getDay() === 0).memo = editor.innerHTML;
         queueSave(dateStr, part);
