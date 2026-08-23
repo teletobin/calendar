@@ -225,7 +225,7 @@
   .toolbar-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
   .toolbar button { border:1px solid #ddd; padding:7px 4px; font-size:12px; }
   .toolbar-grid button[data-status="off"] { background:#d9d9d9; }
-  .toolbar-grid button[data-status="short"] { background:#F7DDDD; }
+  .toolbar-grid button[data-status="short"] { background:#FFE8B1; }
   .toolbar-status-tip {
     margin-top:9px;
     font-size:11px;
@@ -555,7 +555,7 @@ function getDayStyle(dateStr) {
   const first = getEntry(dateStr, "실장", false);
   let bg = "";
   if (first.status === "off") bg = "#d9d9d9";
-  if (first.status === "short") bg = "#BED9CB";
+  if (first.status === "short") bg = "#FFECB8";
   return { bg };
 }
 
