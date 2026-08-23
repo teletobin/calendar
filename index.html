@@ -92,8 +92,8 @@
     font-weight:800;
     margin-left:auto;
     text-align:right;
-    color:#fff4f4;
-  }
+    background:#fff4f4;
+    }
   .status-badge {
     font-size:15px;
     font-weight:800;
@@ -666,8 +666,7 @@ function createDayBox(d, isOutsideMonth = false) {
       sel.removeAllRanges();
       sel.addRange(range);
     }
-
-    memo.addEventListener("keydown", (e) => {
+memo.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
 
   e.preventDefault();
@@ -686,9 +685,9 @@ function createDayBox(d, isOutsideMonth = false) {
   range.deleteContents();
   range.insertNode(br);
 
-  // 줄 맨 끝(뒤에 아무 내용 없음)이면 브라우저가 <br> 하나를
-  // 화면에 표시하지 않고 접어버리는 문제가 있어,
-  // 보이지 않는 문자를 하나 넣어 새 줄이 실제로 보이게 한다.
+  // 줄 끝(뒤에 아무 내용 없음)에서 <br> 하나만 넣으면
+  // 브라우저가 화면에 표시하지 않고 접어버려서,
+  // 보이지 않는 문자를 하나 넣어 커서가 실제로 둘째 줄에 보이게 함
   let caretNode = br;
   if (!br.nextSibling) {
     const filler = document.createTextNode("\u200B");
@@ -706,6 +705,7 @@ function createDayBox(d, isOutsideMonth = false) {
   getEntry(dateStr, part, sunday).memo = memo.innerHTML;
   queueSave(dateStr, part);
 });
+    
     
     memo.addEventListener("input", () => {
       const lineCount = getMemoLineCount(memo);
