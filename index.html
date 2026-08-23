@@ -93,9 +93,7 @@
     margin-left:auto;
     text-align:right;
     background:#fff4f4;
-     padding:2px 6px;
-  border-radius:5px;
-    }
+        }
   .status-badge {
     font-size:15px;
     font-weight:800;
@@ -668,7 +666,8 @@ function createDayBox(d, isOutsideMonth = false) {
       sel.removeAllRanges();
       sel.addRange(range);
     }
-memo.addEventListener("keydown", (e) => {
+
+    memo.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
 
   e.preventDefault();
@@ -687,9 +686,6 @@ memo.addEventListener("keydown", (e) => {
   range.deleteContents();
   range.insertNode(br);
 
-  // 줄 끝(뒤에 아무 내용 없음)에서 <br> 하나만 넣으면
-  // 브라우저가 화면에 표시하지 않고 접어버려서,
-  // 보이지 않는 문자를 하나 넣어 커서가 실제로 둘째 줄에 보이게 함
   let caretNode = br;
   if (!br.nextSibling) {
     const filler = document.createTextNode("\u200B");
@@ -702,31 +698,32 @@ memo.addEventListener("keydown", (e) => {
   sel.removeAllRanges();
   sel.addRange(range);
 
+  memo.dataset.skipOverflowCheck = "1";
   updateMemoLineClass(memo);
   memo.dataset.lastValidHtml = memo.innerHTML;
   getEntry(dateStr, part, sunday).memo = memo.innerHTML;
   queueSave(dateStr, part);
 });
-    
-    
     memo.addEventListener("input", () => {
-      const lineCount = getMemoLineCount(memo);
-      updateMemoLineClass(memo);
+  if (memo.dataset.skipOverflowCheck === "1") {
+    delete memo.dataset.skipOverflowCheck;
+    return;
+  }
 
-      // 글자색 변경도 input 이벤트를 발생시킬 수 있으므로
-      // 실제 줄바꿈이 3줄 이상이거나, Enter 없이 텍스트만 입력해 두 줄
-      // 높이를 넘치는(overflow) 경우에만 제한한다.
-      if (lineCount > 2 || isMemoOverflowing(memo)) {
-        restoreLastValidMemo();
-        updateMemoLineClass(memo);
-        showLineLimitNotice();
-        return;
-      }
+  const lineCount = getMemoLineCount(memo);
+  updateMemoLineClass(memo);
 
-      memo.dataset.lastValidHtml = memo.innerHTML;
-      getEntry(dateStr, part, sunday).memo = memo.innerHTML;
-      queueSave(dateStr, part);
-    });
+  if (lineCount > 2 || isMemoOverflowing(memo)) {
+    restoreLastValidMemo();
+    updateMemoLineClass(memo);
+    showLineLimitNotice();
+    return;
+  }
+
+  memo.dataset.lastValidHtml = memo.innerHTML;
+  getEntry(dateStr, part, sunday).memo = memo.innerHTML;
+  queueSave(dateStr, part);
+});
     memo.addEventListener("paste", (e) => {
       e.preventDefault();
       const text = (e.clipboardData || window.clipboardData).getData("text");
