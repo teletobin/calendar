@@ -632,19 +632,13 @@ function createDayBox(d, isOutsideMonth = false) {
     }
 
     function getMemoLineCount(editor) {
-      // Enter로 만들어진 <br>와 contenteditable의 <div>/<p> 모두 줄로 계산
-      // (innerText는 맨 끝의 <br>를 잘라내는 브라우저가 있어 둘째줄에서
-      //  다시 Enter를 쳤을 때 줄 수를 잘못 세는 문제가 있었음 -> <br> 개수 직접 계산)
-      const clone = editor.cloneNode(true);
-      clone.querySelectorAll("script,style").forEach(el => el.remove());
-      const html = clone.innerHTML
-        .replace(/<div[^>]*>/gi, "<br>")
-        .replace(/<\/div>/gi, "")
-        .replace(/<p[^>]*>/gi, "<br>")
-        .replace(/<\/p>/gi, "");
-      const brCount = (html.match(/<br\s*\/?>/gi) || []).length;
-      return Math.max(1, brCount + 1);
-    }
+  const text = editor.innerText.replace(/\r/g, "");
+  const lines = text.split("\n");
+  if (lines.length > 0 && lines[lines.length - 1] === "") {
+    lines.pop();
+  }
+  return Math.max(1, lines.length);
+}
 
     function isMemoOverflowing(editor) {
       // 줄바꿈 없이 텍스트만 쭉 입력해도 두 줄 높이를 넘으면 입력을 막기 위한 검사
@@ -667,63 +661,31 @@ function createDayBox(d, isOutsideMonth = false) {
       sel.addRange(range);
     }
 
-    memo.addEventListener("keydown", (e) => {
+    // 기존 memo.addEventListener("keydown", (e) => { ... }); 영역을 아래로 대체
+memo.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
 
-  e.preventDefault();
-
-  if (getMemoLineCount(memo) >= 2) {
+  const currentLines = getMemoLineCount(memo);
+  if (currentLines >= 2) {
+    e.preventDefault();
     showLineLimitNotice();
-    return;
   }
-
-  const sel = window.getSelection();
-  if (!sel || !sel.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  if (!memo.contains(range.startContainer)) return;
-
-  const br = document.createElement("br");
-  range.deleteContents();
-  range.insertNode(br);
-
-  let caretNode = br;
-  if (!br.nextSibling) {
-    const filler = document.createTextNode("\u200B");
-    br.after(filler);
-    caretNode = filler;
-  }
-
-  range.setStartAfter(caretNode);
-  range.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(range);
-
-  memo.dataset.skipOverflowCheck = "1";
-  updateMemoLineClass(memo);
-  memo.dataset.lastValidHtml = memo.innerHTML;
-  getEntry(dateStr, part, sunday).memo = memo.innerHTML;
-  queueSave(dateStr, part);
 });
     memo.addEventListener("input", () => {
-  if (memo.dataset.skipOverflowCheck === "1") {
-    delete memo.dataset.skipOverflowCheck;
-    return;
-  }
+      const lineCount = getMemoLineCount(memo);
+      updateMemoLineClass(memo);
 
-  const lineCount = getMemoLineCount(memo);
-  updateMemoLineClass(memo);
+      if (lineCount > 2 || isMemoOverflowing(memo)) {
+        restoreLastValidMemo();
+        updateMemoLineClass(memo);
+        showLineLimitNotice();
+        return;
+      }
 
-  if (lineCount > 2 || isMemoOverflowing(memo)) {
-    restoreLastValidMemo();
-    updateMemoLineClass(memo);
-    showLineLimitNotice();
-    return;
-  }
-
-  memo.dataset.lastValidHtml = memo.innerHTML;
-  getEntry(dateStr, part, sunday).memo = memo.innerHTML;
-  queueSave(dateStr, part);
-});
+      memo.dataset.lastValidHtml = memo.innerHTML;
+      getEntry(dateStr, part, sunday).memo = memo.innerHTML;
+      queueSave(dateStr, part);
+    });
     memo.addEventListener("paste", (e) => {
       e.preventDefault();
       const text = (e.clipboardData || window.clipboardData).getData("text");
