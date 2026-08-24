@@ -40,7 +40,7 @@
     --sunday-width: 100px;
     --weekday-width: 255px;
     --column-gap: 4px;
-    --calendar-width: 1713px;
+    --calendar-width: calc(var(--sunday-width) + (var(--weekday-width) * 6) + (var(--column-gap) * 6));
   }
 
 
@@ -50,7 +50,7 @@
 
   .top {
     background: #f7aeb2;
-    padding: 10px 18px 8px;
+    padding: 10px 0 8px;
     position: sticky;
     top: 0;
     z-index: 20;
@@ -58,8 +58,9 @@
   }
 
   .top-inner {
-    width: min(var(--calendar-width), calc(100vw - 36px));
+    width: var(--calendar-width);
     margin: 0 auto;
+    padding: 0;
   }
 
   .title-row {
@@ -109,7 +110,7 @@
      ========================================================= */
 
   .setup {
-    width: min(var(--calendar-width), calc(100vw - 36px));
+    width: var(--calendar-width);
     margin: 10px auto 0;
     padding: 10px 12px;
     border-radius: 10px;
@@ -132,7 +133,7 @@
     width: 100%;
     overflow-x: auto;
     overflow-y: visible;
-    padding: 6px 18px 10px;
+    padding: 6px 0 10px;
     scrollbar-gutter: stable;
   }
 
@@ -273,7 +274,7 @@
 
 
   /* =========================================================
-     텍스트 입력 영역 (두 줄이 짤리지 않도록 여백 및 줄높이 최적화)
+     텍스트 입력 영역
      ========================================================= */
 
   .memo {
@@ -297,13 +298,11 @@
     vertical-align: top;
   }
 
-  /* 한 줄일 때 세로 중앙 배치 */
   .memo.one-line {
     padding-top: 10px;
     padding-bottom: 0;
   }
 
-  /* 두 줄일 때 상하 여백 최소화로 두 줄 모두 잘림 없이 출력 */
   .memo.two-lines {
     padding-top: 2px;
     padding-bottom: 2px;
@@ -463,17 +462,6 @@
     text-align: center;
   }
 
-  .toolbar-text-tip {
-    margin-top: 10px;
-    padding: 9px 10px;
-    border-radius: 99px;
-    background: #f7f8fa;
-    color: #F7AEB2;
-    font-size: 10.5px;
-    line-height: 1.45;
-    text-align: center;
-  }
-
   .selected-outline {
     outline: 3px solid #F7AEB2;
     outline-offset: -3px;
@@ -497,7 +485,7 @@
      ========================================================= */
 
   .signature {
-    width: min(var(--calendar-width), calc(100vw - 36px));
+    width: var(--calendar-width);
     margin: 0 auto;
     text-align: center;
     color: #999;
@@ -513,32 +501,8 @@
      ========================================================= */
 
   @media (max-width: 900px) {
-    .top-inner {
-      width: var(--calendar-width);
-      max-width: none;
-    }
-
-    .title-row {
-      justify-content: flex-start;
-    }
-
-    .setup {
-      width: var(--calendar-width);
-      max-width: none;
-    }
-
-    .signature {
-      width: var(--calendar-width);
-      max-width: none;
-    }
-
-    .calendar {
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    .top {
-      overflow-x: auto;
+    .calendar-wrap {
+      padding: 6px 18px 10px;
     }
   }
 
@@ -877,9 +841,16 @@ async function loadMonth() {
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth() + 1;
 
-  const from = `${year}-${String(month).padStart(2,"0")}-01`;
-  const last = new Date(year, month, 0).getDate();
-  const to = `${year}-${String(month).padStart(2,"0")}-${last}`;
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const days = new Date(year, month, 0).getDate();
+  const totalSoFar = firstDay + days;
+  const remaining = (7 - (totalSoFar % 7)) % 7;
+
+  const gridStartDate = new Date(year, month - 1, 1 - firstDay);
+  const gridEndDate = new Date(year, month - 1, days + remaining);
+
+  const from = dateToISO(gridStartDate);
+  const to = dateToISO(gridEndDate);
 
   if (!db) {
     setSaveState("미연결 데모 모드");
@@ -1042,7 +1013,6 @@ function createDayBox(d, isOutsideMonth = false) {
     updateMemoLineClass(memo);
     memo.dataset.lastValidHtml = memo.innerHTML;
 
-    /* 줄 제한 알림 */
     function showLineLimitNotice() {
       const notice = $("lineLimitNotice");
       notice.classList.add("show");
@@ -1081,7 +1051,6 @@ function createDayBox(d, isOutsideMonth = false) {
       sel.addRange(range);
     }
 
-    /* 이벤트 바인딩 */
     memo.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") return;
       if (getMemoLineCount(memo) >= 2) {
@@ -1162,20 +1131,17 @@ function render() {
   const firstDay = new Date(year, month - 1, 1).getDay();
   const days = new Date(year, month, 0).getDate();
 
-  // 이전 달 채우기
   const prevMonthLastDate = new Date(year, month - 1, 0).getDate();
   for (let i = firstDay - 1; i >= 0; i--) {
     const d = new Date(year, month - 2, prevMonthLastDate - i);
     calendar.appendChild(createDayBox(d, true));
   }
 
-  // 현재 달 채우기
   for (let i = 1; i <= days; i++) {
     const d = new Date(year, month - 1, i);
     calendar.appendChild(createDayBox(d, false));
   }
 
-  // 다음 달 채우기 (격자 맞춤)
   const totalCells = calendar.children.length;
   const remaining = (7 - (totalCells % 7)) % 7;
   for (let i = 1; i <= remaining; i++) {
