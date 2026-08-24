@@ -452,7 +452,7 @@ const db = supabaseReady
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
   : null;
 
-const PARTS = ["실장", "코디", "간호", "피부"];
+const PARTS = ["실장", "코디", "피부", "간호"];
 const DEFAULT_SUNDAY = ["마감", "수건", "탕비실", "인스타"];
 
 // 2026-08-02(일)을 기준으로 일요일 담당을 매주 자동 순환
