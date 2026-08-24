@@ -14,14 +14,22 @@
     box-sizing: border-box;
   }
 
-  html {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
     width: 100%;
-    overflow-x: hidden;
+    min-height: 100%;
   }
 
   body {
-    margin: 0;
-    font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+    font-family:
+      "Noto Sans KR",
+      "Apple SD Gothic Neo",
+      "Malgun Gothic",
+      Arial,
+      sans-serif;
+
     background: #f6f7f9;
     color: #222;
     overflow-x: hidden;
@@ -33,10 +41,13 @@
 
   .top {
     background: #f7aeb2;
-    padding: 10px 18px 6px;
+    padding: 10px 18px 8px;
+
     position: sticky;
     top: 0;
+
     z-index: 20;
+
     box-shadow: 0 1px 4px rgba(0,0,0,.08);
   }
 
@@ -44,28 +55,41 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 20px;
+
+    width: 100%;
   }
 
   h1 {
     margin: 0;
+
     font-size: 23px;
     font-weight: 800;
+
     letter-spacing: -0.7px;
+
+    white-space: nowrap;
   }
 
   .month-nav {
     display: flex;
     align-items: center;
     gap: 8px;
+
+    flex-shrink: 0;
   }
 
   button {
     border: 0;
     border-radius: 8px;
+
     background: #fff;
+
     cursor: pointer;
+
     padding: 9px 13px;
+
     font-weight: 700;
   }
 
@@ -75,80 +99,86 @@
 
   .month-label {
     min-width: 125px;
+
     text-align: center;
+
     font-size: 19px;
     font-weight: 800;
   }
 
-
   /* =========================================================
-     핵심 수정
-     
-     .calendar-wrap 하나만 가로 스크롤을 담당한다.
-     week-head와 calendar는 같은 .calendar-inner 안에서
-     동일한 1580px 폭을 사용한다.
+     캘린더 전체 영역
+
+     핵심:
+     - overflow-x:auto
+     - 내부 캘린더는 max-content
+     - 화면이 넓으면 margin:auto로 중앙 정렬
+     - 화면이 좁으면 왼쪽부터 정상적으로 스크롤 가능
   ========================================================= */
 
   .calendar-wrap {
     width: 100%;
+
     overflow-x: auto;
     overflow-y: visible;
-    padding: 5px 18px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: auto;
+
+    padding: 8px 18px 5px;
+
+    scrollbar-gutter: stable;
   }
 
-  .calendar-inner {
-    width: 1580px;
-    min-width: 1580px;
-  }
-
-  /* 요일 헤더 */
-  .week-head {
-    width: 1580px;
-    min-width: 1580px;
-    margin-top: 0;
-
-    display: grid;
-    grid-template-columns: 82px repeat(6, 1fr);
-    gap: 8px;
-
-    overflow: visible;
-  }
-
-  .week-head div {
-    min-width: 0;
-    background: #fff4f4;
-    text-align: center;
-    padding: 4px;
-    font-weight: 800;
-    font-size: 13px;
-    border: 1px solid rgba(0,0,0,.08);
-  }
-
-  /* 실제 달력 */
   .calendar {
-    width: 1580px;
-    min-width: 1580px;
+    width: max-content;
+
+    /*
+      일요일은 상대적으로 좁게,
+      월~토는 넓게.
+    */
+    grid-template-columns:
+      155px
+      repeat(6, 265px);
 
     display: grid;
-    grid-template-columns: 82px repeat(6, 1fr);
-    gap: 8px;
-  }
 
+    gap: 9px;
+
+    /*
+      브라우저가 넓을 경우 가운데 정렬.
+      캘린더가 화면보다 넓을 경우에는
+      auto margin이 0으로 처리되어
+      왼쪽부터 정상적으로 접근 가능.
+    */
+    margin-left: auto;
+    margin-right: auto;
+
+    /*
+      절대적인 최소폭을 주지 않고
+      실제 grid 폭을 사용한다.
+    */
+    min-width: max-content;
+  }
 
   /* =========================================================
      날짜 칸
   ========================================================= */
 
   .day {
-    min-height: 175px;
+    min-height: 185px;
+
+    width: 100%;
+
     background: #fff;
+
     border: 1px solid #bfc3c8;
+
     position: relative;
+
     display: flex;
     flex-direction: column;
+
     transition: .12s;
+
+    overflow: hidden;
   }
 
   .day.blank {
@@ -163,33 +193,55 @@
     opacity: .92;
   }
 
+  /* =========================================================
+     날짜 헤더
+
+     예:
+     2/1(일)
+     2/2(월)
+  ========================================================= */
+
   .day-header {
-    height: 24px;
-    flex: 0 0 24px;
-    padding: 3px 6px;
+    height: 30px;
+
+    flex: 0 0 30px;
+
+    padding: 4px 7px;
 
     display: flex;
     justify-content: space-between;
     align-items: center;
 
     border-bottom: 1px solid #c8c8c8;
+
     background: #fff4f4;
   }
 
   .date {
     font-weight: 800;
+
     margin-left: auto;
+
     text-align: right;
+
     background: #fff4f4;
-    font-size: 12px;
+
+    font-size: 13px;
+
+    white-space: nowrap;
   }
 
   .status-badge {
     font-size: 16px;
+
     font-weight: 800;
+
     padding: 0;
+
     border-radius: 0;
+
     background: transparent;
+
     line-height: 1;
   }
 
@@ -203,21 +255,62 @@
     color: #9a7200;
   }
 
+  /* =========================================================
+     텍스트 줄 제한 알림
+  ========================================================= */
+
+  .line-limit-notice {
+    position: fixed;
+
+    top: 72px;
+    left: 50%;
+
+    transform: translateX(-50%) translateY(-8px);
+
+    z-index: 80;
+
+    display: none;
+
+    padding: 8px 15px;
+
+    border: 1px solid #f0c36d;
+
+    border-radius: 999px;
+
+    background: #fff8e8;
+
+    color: #8a5a00;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+
+    pointer-events: none;
+  }
+
+  .line-limit-notice.show {
+    display: block;
+  }
 
   /* =========================================================
-     행
+     업무 행
   ========================================================= */
 
   .rows {
     flex: 1;
+
     display: flex;
     flex-direction: column;
   }
 
   .part-row {
     flex: 1 1 0;
+
     min-height: 0;
-    height: 36px;
+
+    height: 38px;
 
     border-bottom: 1px solid #ddd;
 
@@ -226,45 +319,58 @@
   }
 
   .part-name {
-    width: 42px;
-    flex: 0 0 42px;
+    width: 46px;
+
+    flex: 0 0 46px;
 
     padding: 2px 3px;
 
     font-weight: 800;
+
     font-size: 11px;
 
     border-right: 1px solid #e0e0e0;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
     text-align: center;
+
     line-height: 1.2;
   }
 
   .memo {
     width: 100%;
+
     min-height: 0;
-    height: 36px;
+
+    height: 38px;
 
     border: 0;
     outline: 0;
+
     background: transparent;
 
-    padding: 0 4px;
+    padding: 0 5px;
 
     font-size: 12px;
-    line-height: 18px;
+
+    line-height: 19px;
+
     font-family: inherit;
 
     white-space: pre-wrap;
+
     overflow: hidden;
+
     overflow-wrap: anywhere;
 
     cursor: text;
+
     display: block;
+
     text-align: left;
   }
 
@@ -282,6 +388,7 @@
 
   .memo:empty:before {
     content: attr(data-placeholder);
+
     color: #aaa;
   }
 
@@ -298,59 +405,27 @@
     display: inline;
   }
 
-
-  /* =========================================================
-     줄 제한 알림
-  ========================================================= */
-
-  .line-limit-notice {
-    position: fixed;
-    top: 72px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-8px);
-
-    z-index: 80;
-
-    display: none;
-
-    padding: 8px 15px;
-
-    border: 1px solid #f0c36d;
-    border-radius: 999px;
-
-    background: #fff8e8;
-    color: #8a5a00;
-
-    font-size: 13px;
-    font-weight: 700;
-
-    box-shadow: 0 4px 16px rgba(0,0,0,.12);
-
-    pointer-events: none;
-  }
-
-  .line-limit-notice.show {
-    display: block;
-  }
-
-
   /* =========================================================
      선택 색상 툴바
   ========================================================= */
 
   .selection-toolbar {
     position: fixed;
+
     display: none;
 
     z-index: 100;
 
     background: #fff;
+
     border: 1px solid #bbb;
+
     border-radius: 8px;
 
     box-shadow: 0 5px 18px rgba(0,0,0,.2);
 
     padding: 4px;
+
     gap: 3px;
   }
 
@@ -359,16 +434,19 @@
   }
 
   .selection-toolbar button {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
 
     padding: 0;
 
     border: 1px solid #ddd;
+
     background: #fff;
+
     border-radius: 5px;
 
-    font-size: 18px;
+    font-size: 19px;
+
     line-height: 20px;
   }
 
@@ -384,14 +462,13 @@
     color: #2468d8;
   }
 
-
-  /* =========================================================
-     기타
-  ========================================================= */
-
   .empty {
     visibility: hidden;
   }
+
+  /* =========================================================
+     날짜 설정 툴바
+  ========================================================= */
 
   .toolbar {
     position: fixed;
@@ -405,11 +482,13 @@
     transform: translate(-50%,-50%);
 
     width: 330px;
+
     max-width: calc(100vw - 36px);
 
     background: #fff;
 
     border: 1px solid #ccc;
+
     border-radius: 14px;
 
     box-shadow: 0 8px 28px rgba(0,0,0,.18);
@@ -431,13 +510,17 @@
 
   .toolbar-grid {
     display: grid;
+
     grid-template-columns: repeat(3,1fr);
+
     gap: 6px;
   }
 
   .toolbar button {
     border: 1px solid #ddd;
+
     padding: 7px 4px;
+
     font-size: 13px;
   }
 
@@ -451,21 +534,27 @@
 
   .toolbar-status-tip {
     margin-top: 9px;
+
     font-size: 12px;
+
     color: #777;
+
     text-align: center;
   }
 
   .toolbar-text-tip {
     margin-top: 10px;
+
     padding: 9px 10px;
 
     border-radius: 9px;
 
     background: #f7f8fa;
+
     color: #F7AEB2;
 
-    font-size: 11.5px;
+    font-size: 11px;
+
     line-height: 1.45;
 
     text-align: center;
@@ -473,8 +562,13 @@
 
   .selected-outline {
     outline: 3px solid #F7AEB2;
+
     outline-offset: -3px;
   }
+
+  /* =========================================================
+     저장 상태
+  ========================================================= */
 
   .save-state {
     position: fixed;
@@ -483,6 +577,7 @@
     bottom: 18px;
 
     background: #222;
+
     color: #F7AEB2;
 
     padding: 8px 12px;
@@ -494,6 +589,10 @@
     z-index: 60;
   }
 
+  /* =========================================================
+     안내
+  ========================================================= */
+
   .setup {
     margin: 10px 10px 0;
 
@@ -502,6 +601,7 @@
     border-radius: 10px;
 
     background: #F7E9EB;
+
     border: 1px solid #F7AEB2;
 
     font-size: 14px;
@@ -510,6 +610,10 @@
   .setup strong {
     color: #a05d00;
   }
+
+  /* =========================================================
+     서명
+  ========================================================= */
 
   .signature {
     width: 100%;
@@ -526,7 +630,6 @@
 
     user-select: none;
   }
-
 
   /* =========================================================
      인쇄
@@ -575,49 +678,30 @@
 
     .calendar-wrap {
       width: 100%;
+
       padding: .7mm 0 0;
 
       overflow: visible;
     }
 
-    .calendar-inner {
-      width: 100%;
-      min-width: 0;
-    }
-
-    .week-head {
-      margin: 0;
-
-      width: 100%;
-      min-width: 0;
-
-      display: grid;
-
-      grid-template-columns: 11mm repeat(6,minmax(0,1fr));
-
-      gap: .4mm;
-
-      overflow: visible;
-    }
-
-    .week-head div {
-      font-size: 6.5pt;
-      padding: .7mm;
-    }
-
     .calendar {
       width: 100%;
+
       min-width: 0;
 
-      height: 174mm;
+      margin: 0;
 
       display: grid;
 
-      grid-template-columns: 11mm repeat(6,minmax(0,1fr));
+      grid-template-columns:
+        12mm
+        repeat(6, minmax(0,1fr));
 
       grid-auto-rows: 1fr;
 
       gap: .4mm;
+
+      height: 174mm;
     }
 
     .day {
@@ -633,6 +717,7 @@
 
     .day-header {
       height: 5mm;
+
       flex: 0 0 5mm;
 
       padding: .4mm 1mm;
@@ -642,12 +727,15 @@
       font-size: 6.5pt;
 
       margin-left: auto;
+
       text-align: right;
     }
 
     .status-badge {
       font-size: 8pt;
+
       padding: 0;
+
       font-weight: 800;
     }
 
@@ -657,11 +745,13 @@
       height: 6.8mm;
 
       display: flex;
+
       align-items: stretch;
     }
 
     .part-name {
       width: 7mm;
+
       flex-basis: 7mm;
 
       padding: .35mm .25mm;
@@ -669,6 +759,7 @@
       font-size: 5.5pt;
 
       align-items: center;
+
       justify-content: center;
 
       text-align: center;
@@ -684,6 +775,7 @@
       padding: 0 .6mm;
 
       font-size: 5.8pt;
+
       line-height: 3.4mm;
 
       display: block;
@@ -709,44 +801,75 @@
 
     .signature {
       font-size: 5.5pt;
+
       padding: .8mm 0 0;
     }
 
     .calendar-wrap,
-    .calendar-inner,
-    .calendar,
-    .week-head {
-      width: 100%;
+    .calendar {
       max-width: 100%;
-      min-width: 0;
     }
   }
 
-
   /* =========================================================
-     모바일
+     좁은 화면
+
+     중요한 부분:
+     기존처럼 min-width를 강제로 잡아서
+     캘린더 오른쪽이 잘리는 문제가 생기지 않도록 함.
   ========================================================= */
 
-  @media (max-width: 700px) {
+  @media (max-width: 1100px) {
+
+    .title-row {
+      align-items: flex-start;
+    }
 
     h1 {
-      font-size: 19px;
+      font-size: 20px;
     }
+
+    .calendar-wrap {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    /*
+      화면이 좁아지면 중앙정렬 대신
+      왼쪽부터 시작하게 하여
+      가로스크롤로 오른쪽 끝까지 접근 가능.
+    */
+    .calendar {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  @media (max-width: 700px) {
 
     .top {
       padding: 8px;
     }
 
     .title-row {
-      gap: 10px;
+      flex-direction: column;
+
+      gap: 7px;
+    }
+
+    h1 {
+      font-size: 19px;
     }
 
     .month-nav {
-      gap: 5px;
+      width: 100%;
+
+      justify-content: center;
     }
 
     .month-label {
-      min-width: 100px;
+      min-width: 110px;
+
       font-size: 17px;
     }
 
@@ -754,11 +877,35 @@
       padding: 6px;
     }
 
-    .calendar-inner,
-    .week-head,
+    /*
+      모바일에서는 일요일을 조금 더 좁게,
+      나머지는 여전히 충분한 입력 공간 유지.
+    */
     .calendar {
-      width: 1580px;
-      min-width: 1580px;
+      grid-template-columns:
+        145px
+        repeat(6, 255px);
+
+      gap: 8px;
+    }
+
+    .day {
+      min-height: 180px;
+    }
+
+    .date {
+      font-size: 13px;
+    }
+
+    .part-name {
+      width: 45px;
+      flex-basis: 45px;
+
+      font-size: 11px;
+    }
+
+    .memo {
+      font-size: 12px;
     }
   }
 </style>
@@ -773,6 +920,7 @@
     <h1>실장/코디/간호/피부 공유캘린더</h1>
 
     <div class="month-nav">
+
       <button id="prevBtn">‹</button>
 
       <div class="month-label" id="monthLabel"></div>
@@ -782,6 +930,7 @@
       <button id="todayBtn">오늘</button>
 
       <button id="printBtn" type="button">인쇄</button>
+
     </div>
 
   </div>
@@ -797,34 +946,21 @@
 </div>
 
 
-<div class="setup" id="setupNotice">
+<div
+  class="setup"
+  id="setupNotice"
+>
   1. 텍스트 입력 후 색상을 바꿀 부분을 드래그하면 글자색을 바꿀 수 있어요.
   2. 날짜칸을 세 번 클릭하면 휴무/단축근무를 설정할 수 있어요
 </div>
 
 
-<!-- =========================================================
-     핵심 구조
-     이 영역 하나만 가로 스크롤
-========================================================= -->
-
 <div class="calendar-wrap">
 
-  <div class="calendar-inner">
-
-    <div class="week-head">
-      <div>일요일</div>
-      <div>월요일</div>
-      <div>화요일</div>
-      <div>수요일</div>
-      <div>목요일</div>
-      <div>금요일</div>
-      <div>토요일</div>
-    </div>
-
-    <div class="calendar" id="calendar"></div>
-
-  </div>
+  <div
+    class="calendar"
+    id="calendar"
+  ></div>
 
 </div>
 
@@ -834,10 +970,14 @@
 </div>
 
 
-<!-- 날짜 설정 -->
-<div class="toolbar" id="toolbar">
+<div
+  class="toolbar"
+  id="toolbar"
+>
 
-  <h3 id="toolbarTitle">날짜 설정</h3>
+  <h3 id="toolbarTitle">
+    날짜 설정
+  </h3>
 
   <div class="toolbar-grid">
 
@@ -869,8 +1009,10 @@
 </div>
 
 
-<!-- 글자색 선택 -->
-<div class="selection-toolbar" id="selectionToolbar">
+<div
+  class="selection-toolbar"
+  id="selectionToolbar"
+>
 
   <button
     type="button"
@@ -901,7 +1043,10 @@
 </div>
 
 
-<div class="save-state" id="saveState">
+<div
+  class="save-state"
+  id="saveState"
+>
   저장 준비 중…
 </div>
 
@@ -918,9 +1063,11 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_a1qvwo_vSi0ftx1SVY_Ing_H8eIstT3";
 
+
 const supabaseReady =
   !SUPABASE_URL.includes("YOUR-PROJECT") &&
   !SUPABASE_PUBLISHABLE_KEY.includes("YOUR-PUBLISHABLE-KEY");
+
 
 const db = supabaseReady
   ? window.supabase.createClient(
@@ -931,7 +1078,7 @@ const db = supabaseReady
 
 
 /* =========================================================
-   기본 설정
+   2) 기본 설정
 ========================================================= */
 
 const PARTS = [
@@ -949,13 +1096,18 @@ const DEFAULT_SUNDAY = [
 ];
 
 
-/* =========================================================
-   일요일 자동 순환
-========================================================= */
+/*
+  2026-08-02(일)을 기준으로
+  일요일 담당을 매주 자동 순환
+*/
 
 const SUNDAY_ROTATION_START =
   new Date(2026, 7, 2);
 
+
+/* =========================================================
+   일요일 담당 자동 순환
+========================================================= */
 
 function getSundayDefaults(dateStr) {
 
@@ -971,20 +1123,24 @@ function getSundayDefaults(dateStr) {
   const weekIndex =
     Math.floor(diffDays / 7);
 
+
   const pantry =
     ["간호", "코디", "피부"][
       ((weekIndex % 3) + 3) % 3
     ];
+
 
   const towel =
     ["피부", "코디"][
       ((weekIndex % 2) + 2) % 2
     ];
 
+
   const instagram =
     ["피부", "코디", "간호"][
       ((weekIndex % 3) + 3) % 3
     ];
+
 
   return [
     "",
@@ -996,7 +1152,7 @@ function getSundayDefaults(dateStr) {
 
 
 /* =========================================================
-   상태
+   상태 변수
 ========================================================= */
 
 let viewDate = new Date();
@@ -1011,11 +1167,11 @@ let savingTimer = null;
 
 
 /* =========================================================
-   유틸
+   편의 함수
 ========================================================= */
 
-const $ = id =>
-  document.getElementById(id);
+const $ =
+  id => document.getElementById(id);
 
 
 function keyFor(dateStr, part) {
@@ -1028,13 +1184,45 @@ function keyFor(dateStr, part) {
 function dateToISO(date) {
 
   return [
+
     date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0")
+
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0"),
+
+    String(
+      date.getDate()
+    ).padStart(2, "0")
+
   ].join("-");
 
 }
 
+
+/* =========================================================
+   요일 한글
+========================================================= */
+
+function getKoreanDay(date) {
+
+  const days = [
+    "일",
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+  ];
+
+  return days[date.getDay()];
+}
+
+
+/* =========================================================
+   저장 상태
+========================================================= */
 
 function setSaveState(text) {
 
@@ -1057,19 +1245,24 @@ async function loadMonth() {
   const month =
     viewDate.getMonth() + 1;
 
+
   const from =
-    `${year}-${String(month).padStart(2, "0")}-01`;
+    `${year}-${String(month).padStart(2,"0")}-01`;
+
 
   const last =
     new Date(year, month, 0).getDate();
 
+
   const to =
-    `${year}-${String(month).padStart(2, "0")}-${last}`;
+    `${year}-${String(month).padStart(2,"0")}-${last}`;
 
 
   if (!db) {
 
-    setSaveState("미연결 데모 모드");
+    setSaveState(
+      "미연결 데모 모드"
+    );
 
     render();
 
@@ -1077,24 +1270,30 @@ async function loadMonth() {
   }
 
 
-  setSaveState("불러오는 중…");
+  setSaveState(
+    "불러오는 중…"
+  );
 
 
-  const {
-    data,
-    error
-  } = await db
-    .from("calendar_entries")
-    .select("*")
-    .gte("work_date", from)
-    .lte("work_date", to);
+  const { data, error } =
+    await db
+
+      .from("calendar_entries")
+
+      .select("*")
+
+      .gte("work_date", from)
+
+      .lte("work_date", to);
 
 
   if (error) {
 
     console.error(error);
 
-    setSaveState("DB 불러오기 오류");
+    setSaveState(
+      "DB 불러오기 오류"
+    );
 
     render();
 
@@ -1105,7 +1304,10 @@ async function loadMonth() {
   for (const row of data || []) {
 
     entries[
-      keyFor(row.work_date, row.part)
+      keyFor(
+        row.work_date,
+        row.part
+      )
     ] = {
 
       memo: row.memo || "",
@@ -1114,14 +1316,17 @@ async function loadMonth() {
 
       text: row.text_color || "",
 
-      status: row.status || "normal"
+      status:
+        row.status || "normal"
 
     };
 
   }
 
 
-  setSaveState("자동 저장됨");
+  setSaveState(
+    "자동 저장됨"
+  );
 
   render();
 
@@ -1129,7 +1334,7 @@ async function loadMonth() {
 
 
 /* =========================================================
-   엔트리
+   데이터 가져오기
 ========================================================= */
 
 function getEntry(
@@ -1176,7 +1381,7 @@ function getEntry(
 
 
 /* =========================================================
-   날짜 스타일
+   날짜 배경
 ========================================================= */
 
 function getDayStyle(dateStr) {
@@ -1188,20 +1393,32 @@ function getDayStyle(dateStr) {
       false
     );
 
+
   let bg = "";
 
+
   if (first.status === "off") {
+
     bg = "#d9d9d9";
+
   }
 
+
   if (first.status === "short") {
+
     bg = "#FFECB8";
+
   }
+
 
   return { bg };
 
 }
 
+
+/* =========================================================
+   날짜 상태
+========================================================= */
 
 function dayStatus(dateStr) {
 
@@ -1211,6 +1428,7 @@ function dayStatus(dateStr) {
       "실장",
       false
     );
+
 
   return first.status || "normal";
 
@@ -1235,8 +1453,10 @@ function createDayBox(
   const day =
     d.getDate();
 
+
   const dateStr =
     dateToISO(d);
+
 
   const sunday =
     d.getDay() === 0;
@@ -1245,35 +1465,48 @@ function createDayBox(
   const dayBox =
     document.createElement("div");
 
+
   dayBox.className =
     "day" +
     (sunday ? " sunday" : "");
 
+
   if (isOutsideMonth) {
+
     dayBox.classList.add(
       "outside-month"
     );
+
   }
+
 
   dayBox.dataset.date =
     dateStr;
 
 
-  /* 날짜 배경 */
-
   const style =
     getDayStyle(dateStr);
 
+
   if (style.bg) {
+
     dayBox.style.background =
       style.bg;
+
   }
 
 
-  /* 헤더 */
+  /* =====================================================
+     날짜 헤더
+
+     예:
+     2/1(일)
+     2/2(월)
+  ===================================================== */
 
   const header =
     document.createElement("div");
+
 
   header.className =
     "day-header";
@@ -1282,15 +1515,22 @@ function createDayBox(
   const dateEl =
     document.createElement("span");
 
+
   dateEl.className =
     "date";
 
-  dateEl.textContent =
-    `${month}/${day}`;
 
+  dateEl.textContent =
+    `${month}/${day}(${getKoreanDay(d)})`;
+
+
+  /* =====================================================
+     상태 뱃지
+  ===================================================== */
 
   const badge =
     document.createElement("span");
+
 
   badge.className =
     "status-badge";
@@ -1302,23 +1542,30 @@ function createDayBox(
 
   if (status === "off") {
 
-    badge.textContent = "휴무";
+    badge.textContent =
+      "휴무";
 
-    badge.classList.add("off");
+    badge.classList.add(
+      "off"
+    );
 
   }
 
   else if (status === "short") {
 
-    badge.textContent = "단축근무";
+    badge.textContent =
+      "단축근무";
 
-    badge.classList.add("short");
+    badge.classList.add(
+      "short"
+    );
 
   }
 
   else if (status === "other") {
 
-    badge.textContent = "기타";
+    badge.textContent =
+      "기타";
 
   }
 
@@ -1326,7 +1573,8 @@ function createDayBox(
 
     badge.textContent = "";
 
-    badge.style.display = "none";
+    badge.style.display =
+      "none";
 
   }
 
@@ -1336,13 +1584,19 @@ function createDayBox(
     dateEl
   );
 
-  dayBox.appendChild(header);
+
+  dayBox.appendChild(
+    header
+  );
 
 
-  /* 행 */
+  /* =====================================================
+     업무 행
+  ===================================================== */
 
   const rows =
     document.createElement("div");
+
 
   rows.className =
     "rows";
@@ -1354,10 +1608,11 @@ function createDayBox(
       const row =
         document.createElement("div");
 
+
       row.className =
         "part-row";
 
-      /* 색상 저장 기능에서 사용 */
+
       row.dataset.part =
         part;
 
@@ -1365,8 +1620,10 @@ function createDayBox(
       const partName =
         document.createElement("div");
 
+
       partName.className =
         "part-name";
+
 
       partName.textContent =
         sunday
@@ -1377,11 +1634,14 @@ function createDayBox(
       const memo =
         document.createElement("div");
 
+
       memo.className =
         "memo";
 
+
       memo.contentEditable =
         "true";
+
 
       memo.spellcheck =
         false;
@@ -1397,7 +1657,9 @@ function createDayBox(
 
       const sundayDefault =
         sunday
-          ? getSundayDefaults(dateStr)[idx]
+          ? getSundayDefaults(
+              dateStr
+            )[idx]
           : "";
 
 
@@ -1414,42 +1676,58 @@ function createDayBox(
         sunday ? "" : " ";
 
 
-      updateMemoLineClass(memo);
+      updateMemoLineClass(
+        memo
+      );
+
 
       memo.dataset.lastValidHtml =
         memo.innerHTML;
 
 
-      /* 줄 제한 알림 */
+      /* ===================================================
+         줄 제한
+      =================================================== */
 
       function showLineLimitNotice() {
 
         const notice =
           $("lineLimitNotice");
 
-        notice.classList.add("show");
+
+        notice.classList.add(
+          "show"
+        );
+
 
         clearTimeout(
           window.__lineLimitNoticeTimer
         );
 
+
         window.__lineLimitNoticeTimer =
-          setTimeout(() => {
+          setTimeout(
+            () => {
 
-            notice.classList.remove("show");
+              notice.classList.remove(
+                "show"
+              );
 
-          }, 2200);
+            },
+            2200
+          );
 
       }
 
 
-      /* 줄 수 계산 */
-
-      function getMemoLineCount(editor) {
+      function getMemoLineCount(
+        editor
+      ) {
 
         const text =
           editor.innerText
             .replace(/\r/g, "");
+
 
         const lines =
           text.split("\n");
@@ -1457,7 +1735,9 @@ function createDayBox(
 
         if (
           lines.length > 0 &&
-          lines[lines.length - 1] === ""
+          lines[
+            lines.length - 1
+          ] === ""
         ) {
 
           lines.pop();
@@ -1473,9 +1753,9 @@ function createDayBox(
       }
 
 
-      /* 높이 초과 */
-
-      function isMemoOverflowing(editor) {
+      function isMemoOverflowing(
+        editor
+      ) {
 
         return (
           editor.scrollHeight -
@@ -1485,12 +1765,14 @@ function createDayBox(
       }
 
 
-      /* 클래스 */
-
-      function updateMemoLineClass(editor) {
+      function updateMemoLineClass(
+        editor
+      ) {
 
         const count =
-          getMemoLineCount(editor);
+          getMemoLineCount(
+            editor
+          );
 
 
         editor.classList.toggle(
@@ -1507,35 +1789,44 @@ function createDayBox(
       }
 
 
-      /* 마지막 정상 상태 복원 */
-
       function restoreLastValidMemo() {
 
         memo.innerHTML =
-          memo.dataset.lastValidHtml || "";
+          memo.dataset.lastValidHtml ||
+          "";
 
 
         const range =
           document.createRange();
 
+
         range.selectNodeContents(
           memo
         );
 
-        range.collapse(false);
+
+        range.collapse(
+          false
+        );
 
 
         const sel =
           window.getSelection();
 
+
         sel.removeAllRanges();
 
-        sel.addRange(range);
+
+        sel.addRange(
+          range
+        );
 
       }
 
 
-      /* Enter */
+      /* ===================================================
+         Enter 줄 제한
+      =================================================== */
 
       memo.addEventListener(
         "keydown",
@@ -1547,7 +1838,9 @@ function createDayBox(
 
 
           const currentLines =
-            getMemoLineCount(memo);
+            getMemoLineCount(
+              memo
+            );
 
 
           if (currentLines >= 2) {
@@ -1562,14 +1855,18 @@ function createDayBox(
       );
 
 
-      /* 입력 */
+      /* ===================================================
+         입력
+      =================================================== */
 
       memo.addEventListener(
         "input",
         () => {
 
           const lineCount =
-            getMemoLineCount(memo);
+            getMemoLineCount(
+              memo
+            );
 
 
           updateMemoLineClass(
@@ -1591,6 +1888,7 @@ function createDayBox(
             showLineLimitNotice();
 
             return;
+
           }
 
 
@@ -1615,7 +1913,9 @@ function createDayBox(
       );
 
 
-      /* 붙여넣기 */
+      /* ===================================================
+         붙여넣기
+      =================================================== */
 
       memo.addEventListener(
         "paste",
@@ -1638,7 +1938,9 @@ function createDayBox(
 
 
           const currentLines =
-            getMemoLineCount(memo);
+            getMemoLineCount(
+              memo
+            );
 
 
           const allowed =
@@ -1656,6 +1958,7 @@ function createDayBox(
             showLineLimitNotice();
 
             return;
+
           }
 
 
@@ -1666,7 +1969,8 @@ function createDayBox(
 
 
           if (
-            incomingLines.length > allowed
+            incomingLines.length >
+            allowed
           ) {
 
             showLineLimitNotice();
@@ -1686,13 +1990,19 @@ function createDayBox(
 
       memo.addEventListener(
         "mouseup",
-        () => showSelectionToolbar(memo)
+        () =>
+          showSelectionToolbar(
+            memo
+          )
       );
 
 
       memo.addEventListener(
         "keyup",
-        () => showSelectionToolbar(memo)
+        () =>
+          showSelectionToolbar(
+            memo
+          )
       );
 
 
@@ -1701,34 +2011,47 @@ function createDayBox(
         memo
       );
 
-      rows.appendChild(row);
+
+      rows.appendChild(
+        row
+      );
 
     }
   );
 
 
-  dayBox.appendChild(rows);
+  dayBox.appendChild(
+    rows
+  );
 
 
-  /* 날짜 선택 */
+  /* =====================================================
+     날짜 선택 / 3번 클릭
+  ===================================================== */
 
   dayBox.addEventListener(
     "click",
     (e) => {
 
       if (
-        e.target.closest("textarea")
+        e.target.closest(
+          ".memo"
+        )
       ) {
         return;
       }
 
 
-      selectDay(dayBox);
+      selectDay(
+        dayBox
+      );
 
 
       if (e.detail === 3) {
 
-        openToolbar(dateStr);
+        openToolbar(
+          dateStr
+        );
 
       }
 
@@ -1750,6 +2073,7 @@ function render() {
   const year =
     viewDate.getFullYear();
 
+
   const month =
     viewDate.getMonth() + 1;
 
@@ -1762,7 +2086,8 @@ function render() {
     $("calendar");
 
 
-  calendar.innerHTML = "";
+  calendar.innerHTML =
+    "";
 
 
   const firstDay =
@@ -1781,7 +2106,10 @@ function render() {
     ).getDate();
 
 
-  /* 첫 번째 일요일 */
+  /*
+    첫 번째 일요일은
+    월 시작 전의 실제 일요일 표시
+  */
 
   if (firstDay > 0) {
 
@@ -1801,6 +2129,11 @@ function render() {
     );
 
 
+    /*
+      월 시작 전 월~토는
+      빈칸으로 유지
+    */
+
     for (
       let i = 1;
       i < firstDay;
@@ -1808,10 +2141,14 @@ function render() {
     ) {
 
       const blank =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
+
 
       blank.className =
         "day blank";
+
 
       calendar.appendChild(
         blank
@@ -1822,7 +2159,9 @@ function render() {
   }
 
 
-  /* 날짜 */
+  /* =====================================================
+     실제 날짜
+  ===================================================== */
 
   for (
     let day = 1;
@@ -1880,10 +2219,12 @@ function selectDay(el) {
 
 
 /* =========================================================
-   날짜 설정 툴바
+   날짜 설정창
 ========================================================= */
 
-function openToolbar(dateStr) {
+function openToolbar(
+  dateStr
+) {
 
   selectedDate =
     dateStr;
@@ -1910,22 +2251,26 @@ function openToolbar(dateStr) {
     );
 
 
-  $("toolbarTitle").textContent =
-    `${dateStr} 설정`;
+  $("toolbarTitle")
+    .textContent =
+      `${dateStr} 설정`;
 
 
-  $("toolbar").classList.add(
-    "show"
-  );
+  $("toolbar")
+    .classList.add(
+      "show"
+    );
 
 }
 
 
 /* =========================================================
-   날짜 화면 업데이트
+   날짜 표시 업데이트
 ========================================================= */
 
-function updateDayVisual(dateStr) {
+function updateDayVisual(
+  dateStr
+) {
 
   const first =
     getEntry(
@@ -1947,7 +2292,9 @@ function updateDayVisual(dateStr) {
 
 
   const style =
-    getDayStyle(dateStr);
+    getDayStyle(
+      dateStr
+    );
 
 
   dayBox.style.background =
@@ -2035,9 +2382,11 @@ async function saveEntry(
       JSON.stringify(entries)
     );
 
+
     setSaveState(
       "자동 저장됨"
     );
+
 
     return;
   }
@@ -2048,8 +2397,7 @@ async function saveEntry(
     work_date:
       dateStr,
 
-    part:
-      part,
+    part,
 
     memo:
       e.memo,
@@ -2059,22 +2407,26 @@ async function saveEntry(
         dateStr,
         "실장",
         false
-      ).status || "normal"
+      ).status ||
+      "normal"
 
   };
 
 
-  const {
-    error
-  } = await db
-    .from("calendar_entries")
-    .upsert(
-      row,
-      {
-        onConflict:
-          "work_date,part"
-      }
-    );
+  const { error } =
+    await db
+
+      .from(
+        "calendar_entries"
+      )
+
+      .upsert(
+        row,
+        {
+          onConflict:
+            "work_date,part"
+        }
+      );
 
 
   if (error) {
@@ -2099,7 +2451,7 @@ async function saveEntry(
 
 
 /* =========================================================
-   저장 예약
+   자동 저장 예약
 ========================================================= */
 
 function queueSave(
@@ -2153,83 +2505,116 @@ async function saveWholeDay(
 
 
 /* =========================================================
-   월 이동
+   이전 달
 ========================================================= */
 
-$("prevBtn").addEventListener(
-  "click",
-  () => {
+$("prevBtn")
+  .addEventListener(
+    "click",
+    () => {
 
-    viewDate.setMonth(
-      viewDate.getMonth() - 1
-    );
-
-    $("toolbar")
-      .classList.remove("show");
-
-    loadMonth();
-
-  }
-);
+      viewDate.setMonth(
+        viewDate.getMonth() - 1
+      );
 
 
-$("nextBtn").addEventListener(
-  "click",
-  () => {
-
-    viewDate.setMonth(
-      viewDate.getMonth() + 1
-    );
-
-    $("toolbar")
-      .classList.remove("show");
-
-    loadMonth();
-
-  }
-);
+      $("toolbar")
+        .classList.remove(
+          "show"
+        );
 
 
-$("todayBtn").addEventListener(
-  "click",
-  () => {
+      loadMonth();
 
-    viewDate =
-      new Date();
+    }
+  );
 
-    viewDate.setDate(1);
 
-    $("toolbar")
-      .classList.remove("show");
+/* =========================================================
+   다음 달
+========================================================= */
 
-    loadMonth();
+$("nextBtn")
+  .addEventListener(
+    "click",
+    () => {
 
-  }
-);
+      viewDate.setMonth(
+        viewDate.getMonth() + 1
+      );
+
+
+      $("toolbar")
+        .classList.remove(
+          "show"
+        );
+
+
+      loadMonth();
+
+    }
+  );
+
+
+/* =========================================================
+   오늘
+========================================================= */
+
+$("todayBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      viewDate =
+        new Date();
+
+
+      viewDate.setDate(
+        1
+      );
+
+
+      $("toolbar")
+        .classList.remove(
+          "show"
+        );
+
+
+      loadMonth();
+
+    }
+  );
 
 
 /* =========================================================
    인쇄
 ========================================================= */
 
-$("printBtn").addEventListener(
-  "click",
-  () => {
+$("printBtn")
+  .addEventListener(
+    "click",
+    () => {
 
-    $("toolbar")
-      .classList.remove("show");
+      $("toolbar")
+        .classList.remove(
+          "show"
+        );
 
-    $("selectionToolbar")
-      .classList.remove("show");
 
-    window.print();
+      $("selectionToolbar")
+        .classList.remove(
+          "show"
+        );
 
-  }
-);
+
+      window.print();
+
+    }
+  );
 
 
 /* =========================================================
-   날짜 상태 변경
+   휴무 / 단축근무
 ========================================================= */
 
 document
@@ -2284,6 +2669,10 @@ document
   );
 
 
+/* =========================================================
+   설정창 닫기
+========================================================= */
+
 $("closeToolbar")
   .addEventListener(
     "click",
@@ -2296,7 +2685,7 @@ $("closeToolbar")
 
 
 /* =========================================================
-   글자색 선택 툴바
+   선택 영역 색상 툴바
 ========================================================= */
 
 function showSelectionToolbar(
@@ -2314,7 +2703,9 @@ function showSelectionToolbar(
   ) {
 
     $("selectionToolbar")
-      .classList.remove("show");
+      .classList.remove(
+        "show"
+      );
 
     return;
   }
@@ -2330,6 +2721,7 @@ function showSelectionToolbar(
   ) {
 
     return;
+
   }
 
 
@@ -2345,6 +2737,7 @@ function showSelectionToolbar(
   ) {
 
     return;
+
   }
 
 
@@ -2373,8 +2766,8 @@ function showSelectionToolbar(
       Math.min(
         left,
         window.innerWidth -
-          barWidth -
-          5
+        barWidth -
+        5
       )
     );
 
@@ -2394,6 +2787,7 @@ function showSelectionToolbar(
   bar.style.left =
     `${left}px`;
 
+
   bar.style.top =
     `${top}px`;
 
@@ -2401,7 +2795,7 @@ function showSelectionToolbar(
 
 
 /* =========================================================
-   색상 버튼
+   글자색 변경
 ========================================================= */
 
 document
@@ -2413,7 +2807,8 @@ document
 
       btn.addEventListener(
         "mousedown",
-        e => e.preventDefault()
+        e =>
+          e.preventDefault()
       );
 
 
@@ -2442,7 +2837,9 @@ document
               ? sel
                   .anchorNode
                   .parentElement
-                  ?.closest(".memo")
+                  ?.closest(
+                    ".memo"
+                  )
               : null;
 
 
@@ -2455,8 +2852,9 @@ document
 
 
             const row =
-              editor
-                .closest(".part-row");
+              editor.closest(
+                ".part-row"
+              );
 
 
             const part =
@@ -2508,7 +2906,7 @@ document
 
 
 /* =========================================================
-   바깥 클릭
+   바깥 클릭 시 색상 툴바 닫기
 ========================================================= */
 
 document.addEventListener(
@@ -2553,14 +2951,13 @@ if (!db) {
 
     if (saved) {
 
-      entries =
-        saved;
+      entries = saved;
 
     }
 
   }
 
-  catch(e) {
+  catch (e) {
 
     console.error(e);
 
@@ -2570,7 +2967,7 @@ if (!db) {
 
 
 /* =========================================================
-   시작
+   최초 실행
 ========================================================= */
 
 loadMonth();
