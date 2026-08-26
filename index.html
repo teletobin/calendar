@@ -1100,16 +1100,16 @@
 
       margin: 0;
 
-      height: 174mm;
+      height: 188mm;
 
       display: grid;
 
       grid-template-columns:
         repeat(6, minmax(0, 1fr));
 
-      grid-auto-rows: 1fr;
+      grid-auto-rows: minmax(0, 1fr);
 
-      gap: .4mm;
+      gap: .35mm;
 
     }
 
@@ -1173,7 +1173,9 @@
 
       min-height: 0;
 
-      height: 6.8mm;
+      height: 5.9mm;
+
+      flex: 0 0 5.9mm;
 
       display: flex;
 
@@ -1222,16 +1224,23 @@
 
       min-height: 0;
 
-      height: 6.8mm;
+      height: 5.9mm;
 
-      padding:
-        0 .6mm;
+      flex: 0 0 5.9mm;
+
+      box-sizing: border-box;
+
+      padding: 0 .6mm;
 
       font-size: 6.3pt;
 
-      line-height: 2.7mm;
+      line-height: 2.85mm;
 
-      display: block;
+      display: flex;
+
+      flex-direction: column;
+
+      justify-content: center;
 
       text-align: left;
 
@@ -1253,7 +1262,7 @@
 
       padding: 0 !important;
 
-      line-height: 2.7mm !important;
+      line-height: 2.85mm !important;
 
     }
 
@@ -1264,11 +1273,11 @@
 
     .memo.one-line {
 
-      padding-top: 1.7mm;
+      padding-top: 0 !important;
 
-      padding-bottom: 0;
+      padding-bottom: 0 !important;
 
-      line-height: 2.7mm;
+      line-height: 2.85mm !important;
 
     }
 
@@ -1284,7 +1293,7 @@
 
       padding-bottom: 0 !important;
 
-      line-height: 2.7mm !important;
+      line-height: 2.85mm !important;
 
     }
 
@@ -1301,7 +1310,7 @@
 
       padding-bottom: 0 !important;
 
-      line-height: 2.7mm !important;
+      line-height: 2.85mm !important;
 
     }
 
