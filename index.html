@@ -995,6 +995,19 @@
 
 
   /* =========================================================
+     실시간 공동편집 상태
+     ========================================================= */
+  .presence-box{display:flex;align-items:center;gap:6px;margin-left:auto;padding-left:10px;font-size:11px;white-space:nowrap}
+  .presence-dots{display:flex;align-items:center;gap:3px}
+  .presence-dot{width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.18);box-shadow:0 0 0 1px rgba(255,255,255,.7)}
+  .presence-count{font-weight:700}
+  .memo.remote-editing{position:relative}
+  .remote-cursor{position:absolute;width:2px;height:17px;right:3px;top:50%;transform:translateY(-50%);border-radius:2px;pointer-events:none;animation:remoteCursorBlink .9s steps(1,end) infinite;z-index:20}
+  .remote-editor-dot{position:absolute;width:7px;height:7px;right:2px;top:2px;border-radius:50%;pointer-events:none;z-index:21}
+  @keyframes remoteCursorBlink{0%,45%{opacity:1}46%,100%{opacity:0}}
+  @media print{.presence-box,.remote-cursor,.remote-editor-dot{display:none!important}}
+
+  /* =========================================================
      인쇄
      ========================================================= */
 
@@ -1429,6 +1442,11 @@
 
       </div>
 
+      <div class="presence-box" id="presenceBox" title="현재 이 캘린더를 보고 있는 사람">
+        <div class="presence-dots" id="presenceDots"></div>
+        <span class="presence-count" id="presenceCount">0명</span>
+      </div>
+
     </div>
 
   </div>
@@ -1621,6 +1639,76 @@ const db =
         SUPABASE_PUBLISHABLE_KEY
       )
     : null;
+
+/* =========================================================
+   실시간 공동편집
+   ========================================================= */
+const PRESENCE_COLORS=["#2468d8","#16a34a","#9333ea","#ea580c","#db2777","#0891b2","#ca8a04","#dc2626"];
+const presenceKey=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():`user-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const presenceColor=sessionStorage.getItem("calendarPresenceColor")||PRESENCE_COLORS[Math.floor(Math.random()*PRESENCE_COLORS.length)];
+sessionStorage.setItem("calendarPresenceColor",presenceColor);
+let presenceChannel=null,presenceReady=false,localEditing={date:null,part:null},remoteEditors=new Map();
+
+function refreshRemoteEditors(){
+  document.querySelectorAll(".remote-cursor,.remote-editor-dot").forEach(e=>e.remove());
+  document.querySelectorAll(".memo.remote-editing").forEach(e=>e.classList.remove("remote-editing"));
+  remoteEditors.forEach(ed=>{
+    const day=document.querySelector(`.day[data-date="${CSS.escape(ed.date)}"]`);
+    if(!day)return;
+    const memo=day.querySelector(`.part-row[data-part="${CSS.escape(ed.part)}"] .memo`);
+    if(!memo)return;
+    memo.classList.add("remote-editing");
+    const c=document.createElement("span");c.className="remote-cursor";c.style.background=ed.color;memo.appendChild(c);
+    const d=document.createElement("span");d.className="remote-editor-dot";d.style.background=ed.color;memo.appendChild(d);
+  });
+}
+
+function updatePresenceUI(){
+  if(!presenceChannel)return;
+  const dots=$("presenceDots"),count=$("presenceCount");
+  if(!dots||!count)return;
+  const users=[];
+  Object.entries(presenceChannel.presenceState()).forEach(([key,vals])=>{
+    const v=Array.isArray(vals)&&vals.length?vals[vals.length-1]:{};
+    users.push({key,color:v.color||PRESENCE_COLORS[users.length%PRESENCE_COLORS.length],editing:v.editing||null});
+  });
+  dots.innerHTML="";
+  users.slice(0,8).forEach(u=>{const d=document.createElement("span");d.className="presence-dot";d.style.background=u.color;d.title=u.key===presenceKey?"나":"접속 중";dots.appendChild(d);});
+  count.textContent=`${users.length}명`;
+  remoteEditors.clear();
+  users.forEach(u=>{if(u.key!==presenceKey&&u.editing?.date&&u.editing?.part)remoteEditors.set(u.key,{color:u.color,date:u.editing.date,part:u.editing.part});});
+  refreshRemoteEditors();
+}
+
+async function startPresence(){
+  if(!db||presenceChannel)return;
+  presenceChannel=db.channel("shared-calendar-presence",{config:{presence:{key:presenceKey}}});
+  presenceChannel
+    .on("presence",{event:"sync"},updatePresenceUI)
+    .on("presence",{event:"join"},updatePresenceUI)
+    .on("presence",{event:"leave"},updatePresenceUI)
+    .on("broadcast",{event:"editing"},({payload})=>{
+      if(!payload||payload.key===presenceKey)return;
+      if(payload.editing&&payload.date&&payload.part)remoteEditors.set(payload.key,{color:payload.color||"#2468d8",date:payload.date,part:payload.part});
+      else remoteEditors.delete(payload.key);
+      refreshRemoteEditors();
+    })
+    .subscribe(async status=>{
+      if(status!=="SUBSCRIBED")return;
+      presenceReady=true;
+      await presenceChannel.track({color:presenceColor,editing:null});
+      updatePresenceUI();
+    });
+}
+
+function setEditingCell(date,part,editing=true){
+  if(presenceChannel&&presenceReady){
+    presenceChannel.track({color:presenceColor,editing:editing?{date,part}:null}).catch(()=>{});
+    presenceChannel.send({type:"broadcast",event:"editing",payload:{key:presenceKey,color:presenceColor,date:editing?date:null,part:editing?part:null,editing:!!editing}}).catch(()=>{});
+  }
+  localEditing={date:editing?date:null,part:editing?part:null};
+}
+
 
 
 /* =========================================================
@@ -2916,6 +3004,9 @@ function createDayBox(
       );
 
 
+      memo.addEventListener("focus",()=>setEditingCell(dateStr,part,true));
+      memo.addEventListener("blur",()=>setEditingCell(null,null,false));
+
       /* =====================================================
          붙여넣기
          ===================================================== */
@@ -3237,6 +3328,7 @@ function render() {
 
   }
 
+  refreshRemoteEditors();
 }
 
 
@@ -3618,6 +3710,11 @@ $("printBtn")
   );
 
 
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden&&localEditing.date&&localEditing.part)setEditingCell(null,null,false);
+});
+window.addEventListener("beforeunload",()=>{if(presenceChannel&&presenceReady)presenceChannel.untrack().catch(()=>{});});
+
 /* =========================================================
    페이지 시작
    ========================================================= */
@@ -3627,6 +3724,7 @@ document.addEventListener(
   () => {
 
     loadMonth();
+    startPresence();
 
   }
 );
