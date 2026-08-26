@@ -1,3 +1,180 @@
+붙여넣은 텍스트 (1).txt
+문서
+두줄의 텍스트 입력할땐 두줄이 잘리지 않고 보이지만 재접속하면 둘쨰줄이 잘리는 문제 수정한 코드 줘. 
+이렇게 계속 왜 아래줄이 절반밖에 안보이냐고... 이 문제 못고칠거면 날짜별 칸높이를 두줄 다 표시되게 바꾸든지. 
+편집
+
+네. 이번엔 진짜 상하 여백 자체를 없앴습니다.
+그리고 원인을 찾았습니다.
+
+지금까지 계속 잘렸던 핵심 원인
+
+기존 코드에 이게 있었습니다.
+
+.memo.one-line {
+    padding-top: 10px;
+    padding-bottom: 0;
+    line-height: 16px;
+}
+
+즉 36px짜리 행 안에서 위에서부터 10px를 먼저 먹고, 두 줄이 들어가면 아래쪽 공간이 부족해지는 구조였습니다.
+
+게다가 contenteditable이 재접속하면서 <div> 형태를 만들 경우의 line-height도 별도로 존재했습니다.
+
+이번 수정은 이렇게 했습니다
+
+칸 높이는 그대로 36px 유지하고:
+
+.memo {
+    height: 36px;
+    min-height: 36px;
+    box-sizing: border-box;
+
+    padding: 0 4px !important;
+    margin: 0 !important;
+
+    line-height: 13px !important;
+}
+
+그리고 한 줄이든 두 줄이든 상하 padding 0:
+
+.memo.one-line {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 13px !important;
+}
+
+.memo.two-lines {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 13px !important;
+}
+
+재접속하면서 만들어지는 <div>, <p>도:
+
+.memo > div,
+.memo > p,
+.memo > blockquote {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
+    padding-block-start: 0 !important;
+    padding-block-end: 0 !important;
+    line-height: 13px !important;
+}
+
+으로 상하 여백을 강제로 0으로 만들었습니다.
+
+그리고 사용자가 입력한 Enter 줄바꿈은 건드리지 않습니다.
+
+수정 파일
+
+shared_calendar_two_line_fix_v4.html
+
+이번 버전의 의도는 정확히:
+
+36px 칸 안에 위아래 빈 공간을 최대한 없애고, 입력된 두 줄을 그대로 위에서부터 표시
+
+입니다.
+
+특히 이전 버전처럼 날짜 행 자체를 키우지 않았습니다.
+문제의 padding-top: 10px도 제거했습니다.
+
+shared_calendar_two_line_fix_v4.html
+HTML
+현재코드에서 칸 상단 여백은 없어졌지만 하단 여백이 거슬려. 하단여백없애
+
+네. 하단에 남는 빈 공간을 없애는 방향으로만 수정했습니다.
+
+기존 v4에서는:
+
+line-height: 13px;
+
+이라서 두 줄이 차지하는 높이가 13 × 2 = 26px이고, 칸은 36px이므로 아래에 약 10px가 남는 구조였습니다.
+
+이번 v5에서는 두 줄일 때만:
+
+.memo.two-lines {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    line-height: 18px !important;
+}
+
+으로 해서 두 줄이 36px 전체를 사용하도록 했습니다.
+
+줄바꿈 그대로
+칸 높이 그대로
+상단 여백 0
+하단 여백 0
+두 줄 모두 표시
+저장/재접속 구조 변경 없음
+
+shared_calendar_two_line_fix_v5.html 다운로드
+
+shared_calendar_two_line_fix_v5.html
+HTML
+
+아니.... 두 줄이 36px 전체를 사용하도록 했습니다.
+
+줄바꿈 그대로
+칸 높이 그대로
+상단 여백 0
+하단 여백 0
+두 줄 모두 표시
+저장/재접속 구조 변경 없음
+
+근데 왜 계속 윗쪽 정렬로 보이지? 수직 중앙정렬이야.
+
+한줄만있을떈 당연히 중앙이고 두줄도 칸에 꽉차게 상하여백 동'일하게
+
+맞아요. 제가 앞에서 line-height: 18px만 맞춰놓고 실제로는 위쪽부터 배치되도록 둔 게 문제였습니다.
+
+이번에는 세로 중앙 정렬 자체를 적용했습니다.
+
+이번 수정
+.memo,
+.memo.one-line,
+.memo.two-lines {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+}
+
+그래서 이제:
+
+한 줄
+
+┌────────────┐
+│            │
+│  이예빈OFF │  ← 중앙
+│            │
+└────────────┘
+
+두 줄
+
+┌────────────┐
+│            │
+│  이예빈OFF │
+│  가은비... │  ← 두 줄 전체가 중앙
+│            │
+└────────────┘
+
+처럼 두 줄 전체를 하나의 덩어리로 보고 위·아래 여백이 동일하게 됩니다.
+
+그리고 중요한 것:
+
+Enter로 만든 줄바꿈 그대로
+칸 높이 36px 그대로
+상단/하단 임의 padding 0
+한 줄도 세로 중앙
+두 줄도 두 줄 전체 세로 중앙
+저장/재접속 로직 건드리지 않음
+수정 파일
+
+shared_calendar_two_line_fix_v6.html 다운로드
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -392,7 +569,7 @@
 
   .rows {
 
-    flex: 1;
+    flex: 0 0 auto;
 
     display: flex;
 
@@ -405,9 +582,9 @@
 
   .part-row {
 
-    flex: 1 1 0;
+    flex: 0 0 36px;
 
-    min-height: 0;
+    min-height: 36px;
 
     height: 36px;
 
@@ -487,9 +664,11 @@
 
     min-width: 0;
 
-    min-height: 0;
+    min-height: 36px;
 
     height: 36px;
+
+    box-sizing: border-box;
 
     border: 0;
 
@@ -497,13 +676,14 @@
 
     background: transparent;
 
-    padding: 0 4px;
+    /* 세로 여백은 완전히 제거. 좌우 여백만 유지 */
+    padding: 0 4px !important;
 
-    margin: 0;
+    margin: 0 !important;
 
     font-size: 12px;
 
-    line-height: 16px;
+    line-height: 13px !important;
 
     font-family: inherit;
 
@@ -543,16 +723,12 @@
   .memo > p,
   .memo > blockquote {
 
+    display: block;
     margin: 0 !important;
-
     padding: 0 !important;
-
     border: 0;
-
     line-height: 15px !important;
-
     font-size: inherit;
-
     font-family: inherit;
 
   }
@@ -581,11 +757,10 @@
 
   .memo.one-line {
 
-    padding-top: 10px;
-
-    padding-bottom: 0;
-
-    line-height: 16px;
+    /* 한 줄도 상하 여백을 만들지 않는다. */
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 13px !important;
 
   }
 
@@ -600,11 +775,13 @@
 
   .memo.two-lines {
 
+    /* 두 줄이 36px 전체를 사용하도록 상하 빈 공간 제거 */
     padding-top: 0 !important;
-
     padding-bottom: 0 !important;
-
-    line-height: 15px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    line-height: 18px !important;
+    box-sizing: border-box;
 
   }
 
@@ -613,16 +790,50 @@
   .memo.two-lines > p,
   .memo.two-lines > blockquote {
 
+    display: block;
     margin-top: 0 !important;
-
     margin-bottom: 0 !important;
-
     padding-top: 0 !important;
-
     padding-bottom: 0 !important;
+    line-height: 18px !important;
 
-    line-height: 15px !important;
+  }
 
+
+
+
+  /* contenteditable이 재접속 시 만드는 block 요소의 기본 여백을 전부 제거 */
+  .memo > div,
+  .memo > p,
+  .memo > blockquote {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
+    padding-block-start: 0 !important;
+    padding-block-end: 0 !important;
+    line-height: 13px !important;
+  }
+
+
+  /* =========================================================
+     세로 중앙 정렬
+     - 한 줄: 셀 중앙
+     - 두 줄: 두 줄 전체가 셀 중앙에 오도록 위/아래 공간 동일
+     - 사용자가 입력한 줄바꿈은 변경하지 않음
+     ========================================================= */
+  .memo,
+  .memo.one-line,
+  .memo.two-lines {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    box-sizing: border-box !important;
+  }
+
+  .memo > div,
+  .memo > p,
+  .memo > blockquote {
+    flex: 0 0 auto !important;
   }
 
 
@@ -645,7 +856,8 @@
 
   .memo br {
 
-    line-height: 1;
+    line-height: 13px !important;
+    height: 13px;
 
   }
 
@@ -1194,7 +1406,7 @@
 
       font-size: 6.3pt;
 
-      line-height: 3.0mm;
+      line-height: 2.7mm;
 
       display: block;
 
@@ -1218,7 +1430,7 @@
 
       padding: 0 !important;
 
-      line-height: 3.0mm !important;
+      line-height: 2.7mm !important;
 
     }
 
@@ -1233,7 +1445,7 @@
 
       padding-bottom: 0;
 
-      line-height: 3.0mm;
+      line-height: 2.7mm;
 
     }
 
@@ -1249,7 +1461,7 @@
 
       padding-bottom: 0 !important;
 
-      line-height: 3.0mm !important;
+      line-height: 2.7mm !important;
 
     }
 
@@ -1266,7 +1478,7 @@
 
       padding-bottom: 0 !important;
 
-      line-height: 3.0mm !important;
+      line-height: 2.7mm !important;
 
     }
 
@@ -1793,67 +2005,10 @@ function prepareKoreanInput(editor) {
 
 function normalizeMemoHTML(html) {
 
-  if (!html) {
-
-    return "";
-
-  }
-
-
-  const temp =
-    document.createElement(
-      "div"
-    );
-
-
-  temp.innerHTML =
-    html;
-
-
-  /*
-    block 요소 기본 여백 제거
-  */
-
-  temp.querySelectorAll(
-    "div, p, blockquote"
-  ).forEach(
-    el => {
-
-      el.style.marginTop =
-        "0";
-
-      el.style.marginRight =
-        "0";
-
-      el.style.marginBottom =
-        "0";
-
-      el.style.marginLeft =
-        "0";
-
-      el.style.paddingTop =
-        "0";
-
-      el.style.paddingRight =
-        "0";
-
-      el.style.paddingBottom =
-        "0";
-
-      el.style.paddingLeft =
-        "0";
-
-      el.style.lineHeight =
-        "15px";
-
-    }
-  );
-
-
-  return temp.innerHTML;
-
+  // 사용자가 입력한 Enter 줄바꿈/HTML 구조를 그대로 보존한다.
+  // 여백과 행간은 CSS에서만 조절한다.
+  return html || "";
 }
-
 
 /* =========================================================
    월 불러오기
@@ -3611,3 +3766,5 @@ document.addEventListener(
 
 </body>
 </html>
+shared_calendar_two_line_fix_v6.html
+HTML
