@@ -53,13 +53,17 @@
   /* 안내 + 색상툴 행 */
   .setup-row {
     width: var(--calendar-outer-width);
-    margin: 6px auto 0;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 0;
     box-sizing: border-box;
-    background: transparent;
+    background: #f6f7f9;
+    position: sticky;
+    top: 57px;
+    z-index: 19;
+    padding: 4px 0;
   }
   /* 안내 박스 */
   .setup {
@@ -417,7 +421,7 @@
 
 <div class="setup-row">
   <div class="setup" id="setupNotice">
-    1. 텍스트 입력 후 드래그하면 글자색을 바로 변경할 수 있어요 &nbsp;&nbsp;&nbsp;2. 날짜 부분을 세 번 클릭하면 휴무/단축근무를 설정할 수 있어요. 3.한 팀당 두 줄까지 입력할 수 있어요.
+    1. 텍스트 입력 후 드래그하면 글자색을 미니 툴바에서 변경 할 수 있어요. &nbsp;&nbsp;&nbsp;2. 날짜 부분을 세 번 클릭해 휴무/단축근무를 설정할 수 있어요. &nbsp;&nbsp;&nbsp;3. 한 팀당 2줄을 입력할 수 있어요. &nbsp;&nbsp;&nbsp;4. 여럿이 동시 편집하는 경우 최종 데이터를 꼭 확인해주세요. 
   </div>
   <div class="setup-divider"></div>
   <div class="inline-color-tool" id="inlineColorTool">
@@ -1132,7 +1136,17 @@ window.addEventListener("beforeunload", () => {
 /* =========================================================
    페이지 시작
    ========================================================= */
-document.addEventListener("DOMContentLoaded", () => { loadMonth(); startPresence(); });
+document.addEventListener("DOMContentLoaded", () => {
+  loadMonth();
+  startPresence();
+  // 상단 header 높이에 맞춰 setup-row sticky top 동적 설정
+  function adjustStickyTop() {
+    const headerH = document.querySelector(".top").offsetHeight;
+    document.querySelector(".setup-row").style.top = headerH + "px";
+  }
+  adjustStickyTop();
+  window.addEventListener("resize", adjustStickyTop);
+});
 
 </script>
 </body>
