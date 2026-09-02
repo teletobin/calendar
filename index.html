@@ -198,39 +198,49 @@
   .day.outside-month .part-name { background: #EFEFEF; }
 
   /* 새 코드 시작 */
+/* =========================================================
+     [최종 수정] 2줄 잘림 방지 (여백 최소화 & 줄간격 최적화)
+     ========================================================= */
   .memo {
     width: 100%; min-width: 0; min-height: 36px; height: 36px;
     box-sizing: border-box; border: 0; outline: 0; background: transparent;
-    padding: 2px 4px !important; margin: 0 !important;
-    font-size: 12px; line-height: 16px !important; font-family: inherit;
+    padding: 0 4px !important; margin: 0 !important;
+    font-size: 12px; line-height: 15px !important; font-family: inherit;
     white-space: pre-wrap; overflow: hidden; overflow-wrap: anywhere;
     word-break: break-word; cursor: text; display: block !important;
     text-align: left; vertical-align: top; ime-mode: active; contain: layout style;
   }
-  .memo > div, .memo > p, .memo > blockquote {
-    display: block; margin: 0 !important; padding: 0 !important;
-    border: 0; line-height: 16px !important; font-size: inherit; font-family: inherit;
+
+  /* 엔터로 생기는 줄바꿈 block 요소 처리 (2줄 30px로 높이 딱 맞춰 잘림 방지) */
+  .memo div, .memo p, .memo blockquote {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    line-height: 15px !important;
+    font-size: inherit; font-family: inherit;
   }
+
+  /* 글자색 적용 태그(font, span 등) 인라인 유지 */
   .memo span, .memo font, .memo b, .memo strong, .memo i, .memo em {
     display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
+
+  /* 1줄일 때: 36px 높이 내에서 수직 중앙 정렬 (상단 여백 10px) */
   .memo.one-line {
     padding-top: 10px !important;
-    line-height: 16px !important;
   }
+
+  /* 2줄일 때: 위아래 여백을 최소화하여(상단 여백 3px) 두 줄이 잘리지 않고 다 보임 */
   .memo.two-lines {
-    padding-top: 2px !important;
-    height: 36px !important; min-height: 36px !important;
-    line-height: 16px !important; box-sizing: border-box;
+    padding-top: 3px !important;
   }
-  .memo.two-lines > div, .memo.two-lines > p, .memo.two-lines > blockquote {
-    display: block; margin-top: 0 !important; margin-bottom: 0 !important;
-    padding-top: 0 !important; padding-bottom: 0 !important; line-height: 16px !important;
-  }
+
   .memo:focus { background: rgba(255,255,255,.55); }
   .memo:empty:before { content: attr(data-placeholder); color: #aaa; }
-  .memo br { line-height: 16px !important; }
-  /* 새 코드 끝 */
+  .memo br { display: inline !important; line-height: 15px !important; }
 
   /* 선택 색상 툴바 */
   .selection-toolbar {
