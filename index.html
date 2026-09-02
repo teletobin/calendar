@@ -818,6 +818,12 @@ function render() {
   for (let i = 1; i <= remaining; i++)
     calendar.appendChild(createDayBox(new Date(year, month, i), true));
   refreshRemoteEditors();
+
+  // 새로고침 후 저장된 2줄 데이터 padding 재적용
+  // (innerHTML 세팅 직후엔 innerText 레이아웃이 미완성이므로 rAF로 한 번 더)
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".memo").forEach(updateMemoLineClass);
+  });
 }
 
 function showSelectionToolbar(memoEl) {
