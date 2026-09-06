@@ -979,7 +979,7 @@ function getEntry(dateStr, part, isSunday) {
 function getDayStyle(dateStr) {
   const s = dayStatus(dateStr);
   if (s === "off") return { bg: "#d9d9d9" };
-  if (s === "short" || s.startsWith("short:")) return { bg: "#FEFFE8" };
+  if (s === "short" || s.startsWith("short:")) return { bg: "#FFFBEF" };
   return { bg: "" };
 }
 function dayStatus(dateStr) { return getEntry(dateStr, "실장", false).status || "normal"; }
