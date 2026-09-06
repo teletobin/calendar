@@ -24,15 +24,20 @@
   }
 
   :root {
-    --sunday-width: 80px;
+    --sunday-width: 75px;
     --weekday-width: 255px;
-    --column-gap: 4px;
+    --column-gap: 3px;
     --calendar-width: calc(var(--sunday-width) + (var(--weekday-width) * 6) + (var(--column-gap) * 6));
     --calendar-outer-width: calc(var(--calendar-width) + 14px);
   }
 
   .top {
-    background: #FFE8F2;
+    /* 기존 핑크 톤은 유지하면서, 두번째 코드의 radial-gradient 방식을 참고한 아주 은은한 그라데이션 */
+    background:
+      radial-gradient(720px 210px at 8% 0%, rgba(255, 255, 255, .95), transparent 52%),
+      radial-gradient(680px 220px at 92% 0%, rgba(218, 226, 255, .72), transparent 64%),
+      radial-gradient(900px 260px at 50% 120%, rgba(255, 214, 232, .58), transparent 72%),
+      #FFE8F2;
     padding: 10px 0 8px;
     position: sticky;
     top: 0;
@@ -41,11 +46,11 @@
   }
   .top-inner { width: var(--calendar-outer-width); margin: 0 auto; padding: 0; }
   .title-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-  h1 { margin: 0; font-size: 23px; font-weight: 800; letter-spacing: -0.7px; }
+  h1 { margin: 0; font-size: 23px; font-weight: 600; letter-spacing: -0.7px; }
   .month-nav { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   button { border: 0; border-radius: 8px; background: #fff; cursor: pointer; padding: 9px 13px; font-weight: 700; }
   button:hover { filter: brightness(.97); }
-  .month-label { min-width: 125px; text-align: center; font-size: 19px; font-weight: 800; }
+  .month-label { min-width: 125px; text-align: center; font-size: 19px; font-weight: 600; }
 
   .setup-row {
     width: var(--calendar-outer-width);
@@ -282,6 +287,198 @@
 
   @media (max-width: 900px) { .calendar-wrap { padding: 6px 18px 10px; } }
 
+  /* ─────────────────────────────────────────────
+     모바일 화면 최적화
+     - 데이터/편집/저장/인쇄 로직은 건드리지 않음
+     - 모바일에서 상단 헤더가 잘리지 않도록 재배치
+     - 캘린더는 기존 7열 구조를 유지하면서 화면 안에서 읽기 쉽게 축소
+     - 데스크톱 레이아웃에는 영향 없음
+  ───────────────────────────────────────────── */
+  @media screen and (max-width: 600px) {
+    html, body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .top {
+      padding: 8px 10px 7px;
+      background:
+        radial-gradient(460px 135px at 5% 0%, rgba(255,255,255,.96), transparent 60%),
+        radial-gradient(400px 140px at 100% 0%, rgba(218,226,255,.68), transparent 63%),
+        radial-gradient(560px 150px at 50% 120%, rgba(255,214,232,.55), transparent 72%),
+        #FFE8F2;
+    }
+
+    .top-inner {
+      width: 100%;
+      max-width: none;
+    }
+
+    .title-row {
+      width: 100%;
+      gap: 7px;
+      align-items: center;
+    }
+
+    h1 {
+      min-width: 0;
+      font-weight: 600;
+      flex: 1 1 auto;
+      font-size: 15px;
+      letter-spacing: -0.55px;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .month-nav {
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .month-nav button {
+      padding: 7px 8px;
+      border-radius: 7px;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .month-label {
+      min-width: 76px;
+      font-size: 13px;
+    }
+
+    .month-nav #todayBtn,
+    .month-nav #printBtn {
+      padding-left: 7px;
+      padding-right: 7px;
+    }
+
+    .presence-box {
+      display: none;
+    }
+
+    .setup-row {
+      width: 100%;
+      top: 0;
+      padding: 3px 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .setup-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .setup {
+      padding: 5px 10px 5px 0;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .setup-divider {
+      margin: 0 7px;
+    }
+
+    .inline-color-tool-label {
+      font-size: 10px;
+    }
+
+    .inline-color-btn {
+      width: 17px;
+      height: 17px;
+    }
+
+    .calendar-wrap {
+      width: 100%;
+      padding: 5px 8px 8px;
+      overflow-x: auto;
+      overflow-y: visible;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    .calendar {
+      /* 기존 7열/일요일 폭 구조 유지. 모바일에서는 폭만 축소 */
+      width: 1120px;
+      min-width: 1120px;
+      margin: 0;
+      grid-template-columns: 56px repeat(6, 177.33px);
+      gap: 3px;
+    }
+
+    .day {
+      min-height: 145px;
+    }
+
+    .day-header {
+      min-height: 19px;
+      padding: 2px 5px;
+    }
+
+    .date {
+      font-size: 10px;
+    }
+
+    .status-badge,
+    .status-badge.off,
+    .status-badge.short {
+      font-size: 10px;
+    }
+
+    .part-row {
+      flex-basis: 34px;
+      min-height: 34px;
+      height: 34px;
+    }
+
+    .part-name {
+      width: 36px;
+      flex-basis: 36px;
+      font-size: 11px;
+    }
+
+    .memo {
+      font-size: 11px;
+      line-height: 14px;
+    }
+
+    .memo div,
+    .memo p,
+    .memo blockquote {
+      line-height: 14px !important;
+    }
+
+    .memo br {
+      line-height: 14px !important;
+    }
+
+    .memo.one-line {
+      padding: 9px 4px 0 !important;
+    }
+
+    .memo.two-lines {
+      padding: 3px 4px 0 !important;
+    }
+
+    .signature {
+      width: 100%;
+      font-size: 9px;
+      padding: 6px 0 10px;
+    }
+
+    .toolbar {
+      width: calc(100vw - 24px);
+      max-width: 340px;
+    }
+
+    .selection-toolbar {
+      max-width: calc(100vw - 16px);
+    }
+  }
+
   .presence-box{display:flex;align-items:center;gap:6px;margin-left:auto;padding-left:10px;font-size:11px;white-space:nowrap}
   .presence-dots{display:flex;align-items:center;gap:3px}
   .presence-dot{width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.18);box-shadow:0 0 0 1px rgba(255,255,255,.7)}
@@ -312,12 +509,12 @@
       box-shadow: none; overflow: visible;
     }
     .top-inner { width: 100%; }
-    h1 { font-size: 11pt; font-weight: 800; }
+    h1 { font-size: 11pt; font-weight: 600; }
     .month-nav { gap: 3mm; }
     .month-nav button { display: none !important; }
     .month-label {
       display: block; min-width: 0;
-      font-size: 11pt; font-weight: 800; text-align: right;
+      font-size: 11pt; font-weight: 600; text-align: right;
     }
 
     /* 캘린더 영역: 나머지 공간 꽉 채움 */
@@ -413,6 +610,57 @@
     .signature { width: 100%; font-size: 5pt; padding: .5mm 0 0; }
   }
 </style>
+
+<style id="final-typography-override">
+/* Typography cleanup: one clean system font throughout */
+html, body,
+button, input, textarea, select,
+h1, h2, h3, h4, h5, h6,
+.day, .day-header, .date,
+.part-row, .part-name, .memo,
+.status, .badge, .month-label,
+.setup-row, .signature, .toolbar {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR",
+               "Malgun Gothic", Arial, sans-serif !important;
+  font-weight: 400 !important;
+}
+
+/* Keep hierarchy without the heavy/bold look */
+h1 {
+  font-weight: 600 !important;
+}
+
+.month-label {
+  font-weight: 500 !important;
+}
+
+.day-header,
+.date,
+.part-name,
+.memo,
+.status,
+.badge {
+  font-weight: 400 !important;
+}
+</style>
+
+
+<style id="final-visual-tuning">
+/* Date numbers: slightly stronger for quick scanning */
+.date {
+  font-weight: 500 !important;
+}
+
+/* Title/header: make the lavender tone more visible from the far-left */
+.top {
+  background:
+    radial-gradient(760px 220px at 0% 0%, rgba(214, 207, 255, .88), transparent 68%),
+    radial-gradient(680px 210px at 72% 0%, rgba(255, 255, 255, .62), transparent 66%),
+    radial-gradient(600px 220px at 100% 0%, rgba(238, 242, 255, .52), transparent 70%),
+    #FFE8F2 !important;
+}
+</style>
+
 </head>
 
 <body>
