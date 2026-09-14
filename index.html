@@ -556,7 +556,9 @@
       white-space: nowrap;
     }
     /* ① 상태배지(휴무/단축근무)도 날짜와 동일 크기 */
-    .status-badge {
+    .status-badge,
+    .day-header .status-badge.off,
+    .day-header .status-badge.short {
       font-size: 5.5pt;
       font-weight: 700;
       padding: 0; line-height: 1;
